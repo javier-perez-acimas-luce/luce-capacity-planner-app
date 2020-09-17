@@ -1,0 +1,6 @@
+pyYaml
+pytest==4.4.2
+pytest-cov
+pytest-mock
+setuptools
+setuptools-version-command
