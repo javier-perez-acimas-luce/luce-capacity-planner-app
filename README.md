@@ -1,14 +1,28 @@
-# Python Basic Template
+# Python AppEngine service basic template
 
-a basic python project, with unit testing and a Jenkinsfile with sonar support
+A basic web service with Flask and GCP App Engine project format, with unit testing and a Jenkinsfile with sonar support
 
 ## Getting Started
 
-Use this project as a template for new python projects
+Use this project as a template for new GCP App Engine python projects
 
 ### Installing
 
-Download project, and change name as appropriate. Push it to your new project repo.
+#1. Clone project:
+
+GIT: git clone https://git.luceit.es/big-data-templates/_git/gcp_webapp
+
+PyCharm: VCS > checkout from version control > git
+
+#2. Create your new project in repo
+
+Using TFS user interface.
+
+#3. Change remote to that project
+
+GIT: git remote add origin <server>
+
+PyCharm: right click on project > git > repository > remotes > edit origin
 
 ## Running the tests
 

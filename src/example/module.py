@@ -5,5 +5,5 @@ def write_output_file(path):
 
 
 def do_something(path):
-    write_output_file();
+    write_output_file()
     return True

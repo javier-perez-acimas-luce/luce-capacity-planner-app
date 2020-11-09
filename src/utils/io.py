@@ -1,28 +1,5 @@
-"""
-    Utils for IO on datalake files
-
-    File name: test_read_utils.py
-    Author: Teresa Paramo
-    Date created: 7/22/2018
-    Date last modified: 7/22/2018
-    Python Version: 3.6
-"""
-
-
+import os
 import yaml
-
-
-def get_date_sub_path(date):
-    """
-    Generates a subpath from a date, according to the structure: year/yearmonth/yearmonthday
-    :param date: datetime.date used for the subpath generation.
-    :return: string subpath corresponding to the input date.
-    """
-    year = int(date.year)
-    month = int(date.month)
-    day = int(date.day)
-    return '%04d/%04d%02d/%04d%02d%02d/' % (year, year, month, year, month, day)
-
 
 def load_config(config_file: str):
     """
@@ -51,5 +28,33 @@ def is_key_in_config_file(config_file, key, values):
         subkeys = config_file[key].keys()
         result = all([(x in subkeys and config_file[key][x] != "") for x in values])
     return result
+
+
+def is_key_in_config_file(config_file, key):
+    """
+    Tests whether a yaml object contains a key
+    :param conf: yaml object
+    :param key: string key
+    :param values: list of string values
+    :return: true id all values contained in key, otherwise false
+    """
+    return key in config_file
+
+
+def fetch_env_variable(config: str, var: str, group=None):
+    """
+    Tries to fecth a var from environment, otherwise uses the config_file one
+    :param config_path: str path where the config file with YAML can be found.
+    :param var: str var name.
+    :param group: (optional) str var grouping name name.
+    :return: var value
+    """
+
+    env_value = os.environ.get(var)
+
+    if env_value is None:
+        env_value = config[var] if group is None else config[group][var]
+
+    return env_value
 
 
