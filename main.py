@@ -9,8 +9,9 @@ config = io.load_config(os.path.dirname(os.path.abspath(__file__)) + "/config.ya
 
 @app.route("/")
 def index() -> str:
-    return jsonify({"message": "It Works"})
+    return jsonify({"message": "XML Ingestion main page"})
 
 if __name__ == '__main__':
-    # This is just for debugging
-    app.run(host='0.0.0.0', port=80)
+    host = io.fetch_env_variable(config, 'HOST')
+    port = io.fetch_env_variable(config, 'PORT')
+    app.run(host=host, port=port)

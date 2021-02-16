@@ -1,11 +1,12 @@
-runtime: python37
-service: your_project
-instance_class: B1
+runtime: custom
+service: <your_instance>
+env: flex
+network:
+  forwarded_ports:
+    - 80:8080
 handlers:
-       - url: /.*
-         script: auto
-basic_scaling:
-   max_instances: 1
-   idle_timeout: 10m
-env_variables:
-   GOOGLE_APPLICATION_CREDENTIALS: "D:\\certs\\RIU_demo-PRE.json"
+    - url: /.*
+      script: auto
+automatic_scaling:
+   min_num_instances: 1
+   max_num_instances: 1

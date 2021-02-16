@@ -1,5 +1,25 @@
+"""
+    Utils for IO on datalake files
+
+    File name: io.py
+    Author: Teresa Paramo
+    Date created: 09/02/2021
+    Date last modified: 09/02/2021
+    Python Version: 3.8
+"""
+
 import os
+import time
 import yaml
+
+def get_date_sub_path(file_name):
+    """
+    Generates a subpath from a date, according to the structure: year/month/day/file_name
+    :file_name date: string file name
+    :return: string subpath corresponding to the input path.
+    """
+    return time.strftime("%Y") + "/" + time.strftime("%m") + "/" + time.strftime("%d") + "/" + file_name
+
 
 def load_config(config_file: str):
     """
@@ -40,7 +60,6 @@ def is_key_in_config_file(config_file, key):
     """
     return key in config_file
 
-
 def fetch_env_variable(config: str, var: str, group=None):
     """
     Tries to fecth a var from environment, otherwise uses the config_file one
@@ -56,5 +75,3 @@ def fetch_env_variable(config: str, var: str, group=None):
         env_value = config[var] if group is None else config[group][var]
 
     return env_value
-
-
