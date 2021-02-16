@@ -1,9 +1,14 @@
+import requests
+from flask import abort
 
-def write_output_file(path):
-    with open(path, 'w') as f:
-        f.write()
-
-
-def do_something(path):
-    write_output_file()
-    return True
+def get_url_content(url):
+    """
+    Gets url page content
+    @param url: string URL
+    @return: requests.Response object
+    @raise: HTTPError
+    """
+    response = requests.get(url)
+    if response.status_code != 200:
+        abort(response.status_code, response.reason)
+    return response
