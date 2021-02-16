@@ -1,13 +1,13 @@
 
 import os
 import pytest
-import datetime
+import requests
 import yaml
 
 import main
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture
 def config() -> yaml:
     """
     Creates a config file object to run the tests
@@ -37,3 +37,11 @@ def client():
     main.app.config['TESTING'] = True
     client = main.app.test_client()
     yield client
+
+@pytest.fixture
+def response():
+    response = requests.Response()
+    response.status_code = 200
+    response.url = "www.something.com/data.xml"
+    response._content = b'<?xml version="1.0" encoding="iso-8859-1" standalone="yes" ?><Config></Config>'
+    return response
