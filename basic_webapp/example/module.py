@@ -1,6 +1,7 @@
 import requests
 from flask import abort
 
+
 def get_url_content(url):
     """
     Gets url page content

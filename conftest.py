@@ -1,10 +1,11 @@
 
 import os
+
 import pytest
 import requests
 import yaml
 
-import main
+from basic_webapp import main
 
 
 @pytest.fixture

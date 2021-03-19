@@ -1,0 +1,8 @@
+runtime: python38
+service: <your_instance>
+handlers:
+  - url: /.*
+    script: auto
+entrypoint: gunicorn -b :$PORT <your_package>.main:app #Complete with the package where the main.py is
+manual_scaling:
+  instances: 1

@@ -1,8 +1,8 @@
 import pytest
-
-import src.example.module as mod
-
 from werkzeug.exceptions import BadRequest
+
+import basic_webapp.example.module as mod
+
 
 def test_get_xml_ok(mocker, response):
     m = mocker.patch('src.example.module.requests.get')

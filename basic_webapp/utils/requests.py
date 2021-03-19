@@ -25,7 +25,7 @@ def validate_token(req, config):
 def validate_request(req, args) -> dict:
     """
     Validates whether the list of required arguments are in the request
-    @param request: flask.request
+    @param req: flask.request
     @param args: dict with argument name and if it is required
     @return: dict with param map
     """
