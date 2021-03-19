@@ -46,7 +46,7 @@ setup(
     # project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
 
-    version='2.0.0',  # Required
+    version='1.0.0',  # Required
     # version_command="git describe",
     # pep440_mode="pep440-git-local",
 
