@@ -1,11 +1,12 @@
-import os
+import pkgutil
 
+import yaml
 from flask import Flask, jsonify
 
 from basic_webapp.utils import io
 
 app = Flask(__name__)
-config = io.load_config(os.path.dirname(os.path.abspath(__file__)) + "/config.yaml")
+config = yaml.safe_load(pkgutil.get_data("data", "config.yaml"))
 
 
 @app.route("/")
