@@ -47,8 +47,8 @@ setup(
     # https://packaging.python.org/en/latest/single_source_version.html
 
     version='1.0.0',  # Required
-    #version_command="git describe",
-    #pep440_mode="pep440-git-local",
+    # version_command="git describe",
+    # pep440_mode="pep440-git-local",
 
     # This is a one-line description or tagline of what your project does. This
     # corresponds to the "Summary" metadata field:
@@ -166,16 +166,16 @@ setup(
     #
     # If using Python 2.6 or earlier, then these have to be included in
     # MANIFEST.in as well.
-    # package_data={  # Optional
-    #    'sample': ['package_data.dat'],
-    # },
+    package_data={  # Optional
+        'data': ['config.yaml'],
+    },
 
     # Although 'package_data' is the preferred approach, in some case you may
     # need to place data files outside of your packages. See:
     # http://docs.python.org/3.4/distutils/setupscript.html#installing-additional-files
     #
     # In this case, 'data_file' will be installed into '<sys.prefix>/my_data'
-    data_files=[('', ['app.yaml', 'config.yaml', 'requirements.txt'])], #Optional
+    data_files=[('data', ['app.yaml', 'requirements.txt'])],  # Optional
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow

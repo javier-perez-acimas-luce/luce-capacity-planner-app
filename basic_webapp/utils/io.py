@@ -10,7 +10,9 @@
 
 import os
 import time
+
 import yaml
+
 
 def get_date_sub_path(file_name):
     """
@@ -37,7 +39,7 @@ def load_config(config_file: str):
 def is_key_in_config_file(config_file, key, values):
     """
     Tests whether a yaml object contains certain keys and values associated
-    :param conf: yaml object
+    :param config_file: yaml object
     :param key: string key
     :param values: list of string values
     :return: true id all values contained in key, otherwise false
@@ -60,10 +62,11 @@ def is_key_in_config_file(config_file, key):
     """
     return key in config_file
 
+
 def fetch_env_variable(config: str, var: str, group=None):
     """
-    Tries to fecth a var from environment, otherwise uses the config_file one
-    :param config_path: str path where the config file with YAML can be found.
+    Tries to fetch a var from environment, otherwise uses the config_file one
+    :param config: str path where the config file with YAML can be found.
     :param var: str var name.
     :param group: (optional) str var grouping name name.
     :return: var value

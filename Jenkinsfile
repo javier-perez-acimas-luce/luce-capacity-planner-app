@@ -22,7 +22,7 @@ pipeline {
       stage("Build") {
         steps {
           echo('Build project')
-          sh ''' python setup.py bdist_egg '''
+          sh ''' python setup.py bdist_wheel '''
         }
       }
 

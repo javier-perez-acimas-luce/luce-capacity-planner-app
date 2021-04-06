@@ -1,10 +1,11 @@
 
 import os
+
 import pytest
 import requests
 import yaml
 
-import main
+from basic_webapp import main
 
 
 @pytest.fixture
@@ -14,7 +15,7 @@ def config() -> yaml:
     @return: YAML object
     """
     root_dir = os.path.dirname(os.path.abspath(__file__))
-    config_path = root_dir + '/config.yaml'
+    config_path = root_dir + '/data/config.yaml'
     cfg = None
     with open(config_path, 'r') as ymlfile:
         loader = yaml.Loader(ymlfile)

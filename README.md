@@ -24,6 +24,20 @@ GIT: git remote add origin <server>
 
 PyCharm: right click on project > git > repository > remotes > edit origin
 
+#4. Modify settings
+
+Sonar properties: projectKey, projectName, sources
+
+Setup: name, description, author email, keywords
+
+Requirements: add necessary libraries (with version)
+
+README: update for your case
+
+Create a pycharm environment
+
+Create project on https://jenkins-ci.luceit.es:1443/
+
 ## Running the tests
 
 Use one test file for each module. It should be named test_your_module_name.
