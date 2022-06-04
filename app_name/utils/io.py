@@ -46,20 +46,12 @@ def is_key_in_config_file(config_file, key, values):
     """
     result = False
     is_key = key in config_file
+    if values is None:
+        return is_key
     if is_key:
         subkeys = config_file[key].keys()
         result = all([(x in subkeys and config_file[key][x] != "") for x in values])
     return result
-
-
-def is_key_in_config_file(config_file, key):
-    """
-    Tests whether a yaml object contains a key
-    :param config_file: yaml object
-    :param key: string key
-    :return: true id all values contained in key, otherwise false
-    """
-    return key in config_file
 
 
 def fetch_env_variable(config: str, var: str, group=None):
