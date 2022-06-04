@@ -5,7 +5,7 @@ import pytest
 import requests
 import yaml
 
-from basic_webapp import main
+from app_name import main
 
 
 @pytest.fixture
@@ -16,7 +16,6 @@ def config() -> yaml:
     """
     root_dir = os.path.dirname(os.path.abspath(__file__))
     config_path = root_dir + '/data/config.yaml'
-    cfg = None
     with open(config_path, 'r') as ymlfile:
         loader = yaml.Loader(ymlfile)
         cfg = loader.get_single_data()
@@ -24,7 +23,7 @@ def config() -> yaml:
 
 
 @pytest.fixture(scope='session')
-def root_dir() ->str:
+def root_dir() -> str:
     """
     Returns project's root dir
     @return: YAML object
@@ -38,6 +37,7 @@ def client():
     main.app.config['TESTING'] = True
     client = main.app.test_client()
     yield client
+
 
 @pytest.fixture
 def response():

@@ -55,9 +55,8 @@ def is_key_in_config_file(config_file, key, values):
 def is_key_in_config_file(config_file, key):
     """
     Tests whether a yaml object contains a key
-    :param conf: yaml object
+    :param config_file: yaml object
     :param key: string key
-    :param values: list of string values
     :return: true id all values contained in key, otherwise false
     """
     return key in config_file
