@@ -1,12 +1,10 @@
-runtime: custom
+runtime: python38
 service: <your_instance>
-env: flex
-network:
-  forwarded_ports:
-    - 80:8080
+instance_class: B2
 handlers:
-    - url: /.*
-      script: auto
-automatic_scaling:
-   min_num_instances: 1
-   max_num_instances: 1
+  - url: /.*
+    script: auto
+entrypoint: gunicorn -b :$PORT <your_package>.main:app #Complete with the package where the main.py is
+basic_scaling:
+  max_instances: 1
+  idle_timeout: 10m
