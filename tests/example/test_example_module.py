@@ -1,18 +1,18 @@
 import pytest
 from werkzeug.exceptions import BadRequest
 
-import basic_webapp.example.module as mod
+import app_name.example.module as mod
 
 
 def test_get_xml_ok(mocker, response):
-    m = mocker.patch('basic_webapp.example.module.requests.get')
+    m = mocker.patch('app_name.example.module.requests.get')
     m.return_value = response
     result = mod.get_url_content("any_url")
     assert result.status_code == 200
 
 
 def test_get_xml_connection_error(mocker, response):
-    m = mocker.patch('basic_webapp.example.module.requests.get')
+    m = mocker.patch('app_name.example.module.requests.get')
     response.status_code = 400
     m.return_value = response
     with pytest.raises(BadRequest):

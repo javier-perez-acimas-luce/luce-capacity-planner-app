@@ -1,22 +1,23 @@
 # Python AppEngine service basic template
 
-A basic web service with Flask and GCP App Engine project format, with unit testing and a Jenkinsfile with sonar support
+A basic web service with Flask and GCP App Engine project format, with unit testing and a bitbucket pipeline with sonar
+support
 
 ## Getting Started
 
-Use this project as a template for new GCP App Engine python projects
+Use this project as a template for new GCP python projects
 
 ### Installing
 
 #1. Clone project:
 
-GIT: git clone https://git.luceit.es/big-data-templates/_git/gcp_webapp
+GIT: git clone git@bitbucket.org:luce_data/luce-python-cloud-template.git
 
 PyCharm: VCS > checkout from version control > git
 
 #2. Create your new project in repo
 
-Using TFS user interface.
+Using Bitbucket (https://bitbucket.org/dashboard/overview) user interface.
 
 #3. Change remote to that project
 
@@ -36,18 +37,48 @@ README: update for your case
 
 Create a pycharm environment
 
-Create project on https://jenkins-ci.luceit.es:1443/
-
 ## Running the tests
 
-Use one test file for each module. It should be named test_your_module_name.
-You can run them with either pytest command (in project root) or IDE Run >  py.test in tests
+Use one test file for each module. It should be named test_your_module_name. You can run them with either pytest
+command (in project root) or with a configuration on Pycharm:
+
+- Run > Edit Configurations...
+- Set Target: Script path
+- Path: path/to/project/<PROJECT_NAME>/tests
+- Working directory: path/to/project/<PROJECT_NAME>
+- Then, run the configuration
+
+## Architecture diagram
+
+Link to the architecture diagram of the application
+
+## Environment variables
+
+List of environment variables and how to populate it
+
+## Running de application
+
+Explain how to configure and run the application
+
+### Available services
+
+List of the available services offers by the application and how to invoke them
+
+## Deploying the application
+
+List of the command or reference to the scripts to deploy de application. Automated deployment from bitbucket-pipelines
 
 ## Versioning
 
 We use https://sites.google.com/luceit.es/luceit/otros/devops/devops-politica_de_versionado
 
+## Changelog
+
+| Version |Date (last change)| Developer      |                                                   Changes                                                  |
+|:-------:|:-----------------|:--------------:|:-----------------------------------------------------------------------------------------------------------|
+| v0.0.1  | 01/06/2022       |javier.perez    | Complete template version to deploy different python applications on Google Cloud|
+| v0.0.0  | 01/01/2022       |teresa.paramo   | Template version to deploy a flask service on App Engine (GCP)|
+
 ## Authors
 
-* **Teresa Paramo** - teresa.paramo@luceit.es
-
+* **Javier Pérez** - javier.perez@luceit.es

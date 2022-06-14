@@ -1,0 +1,195 @@
+image: python:3.8
+# enable Docker for your repository
+options:
+  docker: true
+clone:
+  depth: full # SonarQube scanner needs the full history to assign issues properly
+
+definitions:
+  steps:
+    - step: &Build
+        name: 'Build'
+        caches:
+          - pip
+        script:
+          - echo "Installing requirements..."
+          - if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          - pip install pytest
+          - echo "Requirements installation finished"
+          - pip install wheel setuptools
+          - python setup.py bdist_wheel
+    - step: &Unit-Test
+        name: 'Unit Test'
+        caches:
+          - pip
+        script:
+          - if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          - pip install pytest
+          - echo "Running test..."
+          - pytest -v --junitxml=pytest-report.xml --cov=. --cov-report xml
+          - echo "Test step finished"
+        artifacts:
+          - coverage.xml
+          - pytest-report.xml
+    - step: &Lint-style
+        name: 'Lint style'
+        script:
+          # Enforce style consistency across Python projects https://flake8.pycqa.org/en/latest/manpage.html
+          - echo "Running lint style..."
+          - pip install flake8
+          - flake8 . --extend-exclude=dist,build --show-source --statistics
+          - echo "Test step finished"
+    - step: &Sonar-qube
+        name: 'Analyze on SonarQube'
+        caches:
+          - pip
+        script:
+          - echo "Running sonar scanner..."
+          - pipe: sonarsource/sonarqube-scan:1.0.0
+            variables:
+              SONAR_HOST_URL: ${SONAR_HOST_URL}
+              SONAR_TOKEN: ${SONAR_TOKEN}
+              EXTRA_ARGS: -Dsonar.qualitygate.wait=true
+          - echo "Sonar scanner finished"
+    - step: &Deploy-to-artifactory
+        name: 'Deploy to artifactory'
+        script:
+          - echo "Save artifact and send to artifactory"
+          - pip install twine
+          - twine upload -r nexus3 --repository-url $NEXUS_HOST_URL/repository/$NEXUS_REPOSITORY_NAME/ dist/* --username $USER_NEXUS --password $PASS_NEXUS
+    - step: &Deploy-to-env
+        name: 'Deploy application on environment'
+        image: google/cloud-sdk:latest
+        caches:
+          - docker
+        script:
+          - echo "Deploying application..."
+          # TODO
+    - step: &Deploy-infra
+        name: 'Deploy infrastructure on environment'
+        image: google/cloud-sdk:latest
+        caches:
+          - docker
+        script:
+          - echo "Deploying databases and other services..."
+          # TODO
+          #- echo ${KEY_FILE} | base64 --decode --ignore-garbage > /tmp/gcloud-api.json
+          #- gcloud auth activate-service-account --key-file /tmp/gcloud-api.json
+          #- gcloud config set project $GCP_PROJECT_ID
+          #- find ./deployment/scripts/infra/ -type f -exec sed -i "s/$GCP_PROJECT_ID/$GCP_PROJECT_ID/g" {} +
+          #- chmod 777 -R ./deployment/scripts/infra/
+          #- run-parts --regex '.*sh$' ./deployment/scripts/infra/
+    - step: &Integration-test
+        name: 'Integration Test'
+        caches:
+          - pip
+        script:
+          - echo "STEP PENDING TO DEFINE AND IMPLEMENT"
+          # TODO
+    - step: &Validation-test
+        name: 'Validation Test'
+        caches:
+          - pip
+        script:
+          - echo "STEP PENDING TO DEFINE AND IMPLEMENT"
+          # TODO
+    - step: &Notify-deployment
+        name: 'Notify deployment'
+        script:
+          - pipe: atlassian/email-notify:0.7.0
+            variables:
+              USERNAME: $SENDER_EMAIL
+              PASSWORD: $PASSWORD
+              FROM: $SENDER_EMAIL
+              TO: $REPORTED_USER_EMAIL
+              HOST: 'smtp.gmail.com'
+              SUBJECT: 'Bitbucket Pipe Notification for ${BITBUCKET_REPO_FULL_NAME} on branch ${BITBUCKET_BRANCH}'
+
+pipelines:
+  default:
+    - step: *Build
+    - step: *Unit-Test
+    - parallel:
+        - step: *Lint-style
+        - step: *Sonar-qube
+  branches:
+    '{feature/*,fix/*}':
+      - step:
+          name: 'Branch configuration'
+          script:
+            - echo "Feature or fix branch detected"
+            - echo "Launch code evaluation steps manually for your code"
+      - step:
+          <<: *Build
+          trigger: 'manual'
+      - step:
+          <<: *Unit-Test
+      - parallel:
+          - step:
+              <<: *Lint-style
+              trigger: 'manual'
+          - step:
+              <<: *Sonar-qube
+              trigger: 'manual'
+    develop:
+      - step:
+          <<: *Build
+          artifacts:
+            - dist/*
+      - step:
+          name: 'Deploy to artifactory'
+          script:
+            - echo "Save artifact and send to artifactory"
+            - pip install twine
+            - twine upload -r nexus3 --repository-url $NEXUS_HOST_URL/repository/pypi-snapshots/ dist/* --username $USER_NEXUS --password $PASS_NEXUS
+      - step:
+          <<: *Deploy-to-env
+          trigger: 'manual'
+          deployment: Test
+    staging:
+      - step: *Build
+      - step:
+          <<: *Deploy-infra
+          trigger: 'manual'
+      - step:
+          <<: *Deploy-to-env
+          deployment: Staging
+      - parallel:
+          - step:
+              <<: *Integration-test
+          - step:
+              <<: *Validation-test
+    master:
+      - step:
+          <<: *Build
+          artifacts:
+            - dist/*
+      - step:
+          name: Tag version
+          trigger: 'manual'
+          script:
+            - git remote set-url origin ${BITBUCKET_GIT_HTTP_ORIGIN}
+            - dt=$(date '+%Y-%m-%d_%H%M');
+            - git tag ${RELEASE_VERSION}_$dt ${BITBUCKET_COMMIT}
+            - git push origin --tags
+      - step:
+          name: 'Deploy to artifactory'
+          script:
+            - echo "Save artifact and send to artifactory"
+            - pip install twine
+            - twine upload -r nexus3 --repository-url $NEXUS_HOST_URL/repository/pypi-realeases/ dist/* --username $USER_NEXUS --password $PASS_NEXUS
+      - step:
+          <<: *Deploy-infra
+          trigger: 'manual'
+      - step:
+          <<: *Deploy-to-env
+          trigger: 'manual'
+          deployment: Production
+
+  pull-requests:
+    '{feature/*,fix/*}':
+      - step: *Build
+      - step: *Unit-Test
+      - parallel:
+          - step: *Lint-style
+          - step: *Sonar-qube

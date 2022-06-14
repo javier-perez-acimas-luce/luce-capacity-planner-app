@@ -2,7 +2,7 @@ import flask
 import pytest
 from werkzeug.exceptions import Forbidden, BadRequest
 
-from basic_webapp.utils import requests
+from app_name.utils import requests
 
 
 def test_validate_token_wrong_token(config):
@@ -23,7 +23,7 @@ def test_validate_token(config):
     app = flask.Flask(__name__)
     with app.test_request_context('/ingestion/xml?token='+config['token']):
         status = requests.validate_token(flask.request, config)
-        assert status == True
+        assert status is True
 
 
 def test_validate_request():

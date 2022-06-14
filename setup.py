@@ -22,6 +22,10 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
+# Get version number from the VERSION file
+with open(path.join(here, '.VERSION'), encoding='utf-8') as f:
+    __VERSION__ = f.read()
+
 # Arguments marked as "Required" below must be included for upload to PyPI.
 # Fields marked as "Optional" may be commented out.
 
@@ -46,7 +50,7 @@ setup(
     # project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
 
-    version='1.0.0',  # Required
+    version=__VERSION__,  # Required
     # version_command="git describe",
     # pep440_mode="pep440-git-local",
 
@@ -130,8 +134,8 @@ setup(
     #
     #   py_modules=["my_module"],
     #
-    py_modules=['main'], #App Engine requires a main in root level with service endpints
-    packages=find_packages(exclude=['contrib', 'docs', 'test', 'examples']),  # Required
+    py_modules=['main'],  # App Engine requires a main in root level with service endpoints
+    packages=find_packages(exclude=['contrib', 'docs', 'tests', 'examples']),  # Required
 
     # Specify which Python versions you support. In contrast to the
     # 'Programming Language' classifiers above, 'pip install' will check this
@@ -146,7 +150,7 @@ setup(
     #
     # For an analysis of "install_requires" vs pip's requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    #install_requires=['pyspark'],  # Optional
+    # install_requires=['pyspark'],  # Optional
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"
