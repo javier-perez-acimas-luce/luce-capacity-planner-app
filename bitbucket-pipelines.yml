@@ -64,7 +64,14 @@ definitions:
           - docker
         script:
           - echo "Deploying application..."
-          # TODO
+          - version=$(<.VERSION)
+          - export RELEASE_VERSION=${version//\./-}
+          - echo ${KEY_FILE_DEPLOY} | base64 --decode --ignore-garbage > /tmp/gcloud-api.json
+          - gcloud auth activate-service-account --key-file /tmp/gcloud-api.json
+          - gcloud config set project $GCP_PROJECT_ID
+          - find ./deployment/scripts/artifacts/ -type f -exec sed -i "s/$GCP_PROJECT_ID/$GCP_PROJECT_ID/g" {} +
+          - chmod 777 -R ./deployment/scripts/artifacts/
+          - run-parts --regex '.*sh$' ./deployment/scripts/artifacts/
     - step: &Deploy-infra
         name: 'Deploy infrastructure on environment'
         image: google/cloud-sdk:latest
@@ -72,13 +79,14 @@ definitions:
           - docker
         script:
           - echo "Deploying databases and other services..."
-          # TODO
-          #- echo ${KEY_FILE} | base64 --decode --ignore-garbage > /tmp/gcloud-api.json
-          #- gcloud auth activate-service-account --key-file /tmp/gcloud-api.json
-          #- gcloud config set project $GCP_PROJECT_ID
-          #- find ./deployment/scripts/infra/ -type f -exec sed -i "s/$GCP_PROJECT_ID/$GCP_PROJECT_ID/g" {} +
-          #- chmod 777 -R ./deployment/scripts/infra/
-          #- run-parts --regex '.*sh$' ./deployment/scripts/infra/
+          - version=$(<.VERSION)
+          - export RELEASE_VERSION=${version//\./-}
+          - echo ${KEY_FILE_DEPLOY} | base64 --decode --ignore-garbage > /tmp/gcloud-api.json
+          - gcloud auth activate-service-account --key-file /tmp/gcloud-api.json
+          - gcloud config set project $GCP_PROJECT_ID
+          - find ./deployment/scripts/infra/ -type f -exec sed -i "s/$GCP_PROJECT_ID/$GCP_PROJECT_ID/g" {} +
+          - chmod 777 -R ./deployment/scripts/infra/
+          - run-parts --regex '.*sh$' ./deployment/scripts/infra/
     - step: &Integration-test
         name: 'Integration Test'
         caches:
@@ -170,6 +178,8 @@ pipelines:
           script:
             - git remote set-url origin ${BITBUCKET_GIT_HTTP_ORIGIN}
             - dt=$(date '+%Y-%m-%d_%H%M');
+            - version=$(<.VERSION)
+            - export RELEASE_VERSION=${version//\./-}
             - git tag ${RELEASE_VERSION}_$dt ${BITBUCKET_COMMIT}
             - git push origin --tags
       - step:
