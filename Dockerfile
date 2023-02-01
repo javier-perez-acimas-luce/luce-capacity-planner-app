@@ -1,21 +1,23 @@
-FROM gcr.io/google-appengine/python
-MAINTAINER Luce Innovative Technologies
+FROM python:3.10-slim
+LABEL maintainer="Luce Innovative Technologies"
 
-# Create a virtualenv for dependencies. This isolates these packages from
-# system-level packages.
-# Use -p python3 or -p python3.7 to select python version. Default is version 2.
-RUN virtualenv /env -p python3.7
-
-# Setting these environment variables are the same as running
-# source /env/bin/activate.
-ENV VIRTUAL_ENV /env
-ENV PATH /env/bin:$PATH
-
-WORKDIR /home/
-ENV PORT='8080'
-ENV HOST='0.0.0.0'
-ENV GOOGLE_APPLICATION_CREDENTIALS='/home/credentials.json'
 EXPOSE 8080
-COPY ./ ./
-RUN pip install -r requirements.txt
-CMD [ "python", "-u", "main.py" ]
+
+ENV PORT="8080"
+ENV HOST="0.0.0.0"
+ENV LOGLEVEL=INFO
+
+WORKDIR /app
+COPY src .
+
+RUN apt update && apt upgrade -y && apt install -y build-essential \
+    && pip install -r requirements.txt \
+    && apt remove -y build-essential \
+    && apt autoremove -y \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd -r luceit && adduser --system --no-create-home luceit \
+    && chown -R luceit:luceit /app
+
+USER luceit
+
+CMD exec gunicorn --bind $HOST:$PORT --workers 1 --threads 8 --timeout 0 --log-level=$LOGLEVEL main:app --chdir app_name
