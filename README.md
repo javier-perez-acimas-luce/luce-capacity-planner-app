@@ -76,6 +76,7 @@ We use https://sites.google.com/luceit.es/luceit/otros/devops/devops-politica_de
 
 | Version |Date (last change)| Developer      |                                                   Changes                                                  |
 |:-------:|:-----------------|:--------------:|:-----------------------------------------------------------------------------------------------------------|
+| v0.0.2  | 01/02/2023       |javier.perez    | Update libraries versions to Python 3.8|
 | v0.0.1  | 01/06/2022       |javier.perez    | Complete template version to deploy different python applications on Google Cloud|
 | v0.0.0  | 01/01/2022       |teresa.paramo   | Template version to deploy a flask service on App Engine (GCP)|
 
