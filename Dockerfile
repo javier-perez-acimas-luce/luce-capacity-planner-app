@@ -8,7 +8,7 @@ ENV HOST="0.0.0.0"
 ENV LOGLEVEL=INFO
 
 WORKDIR /app
-COPY app_name .
+COPY . .
 
 RUN apt update && apt upgrade -y && apt install -y build-essential \
     && pip install -r requirements.txt \
