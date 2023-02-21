@@ -115,8 +115,8 @@ definitions:
     - step: &Security-scan
         name: 'Security scan'
         script:
-          - docker build . -t ${PROJECT_NAME}
-          - docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image --ignore-unfixed --severity HIGH,CRITICAL ${PROJECT_NAME}
+          - docker build -t myimage .
+          - docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image --ignore-unfixed --severity HIGH,CRITICAL myimage
 
 pipelines:
   default:
