@@ -1,4 +1,4 @@
-image: python:3.8
+image: python:3.10
 # enable Docker for your repository
 options:
   docker: true
@@ -116,7 +116,7 @@ definitions:
         name: 'Security scan'
         script:
           - docker build -t myimage .
-          - docker run -it --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image --ignore-unfixed --severity HIGH,CRITICAL myimage
+          - docker run -i --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image --ignore-unfixed --severity HIGH,CRITICAL myimage
 
 pipelines:
   default:
