@@ -120,8 +120,7 @@ definitions:
           - pipe: aquasecurity/trivy-pipe:1.0.0
             variables:
               scanType: 'fs'
-              format: 'template'
-              template: '@/contrib/sarif.tpl'
+              format: 'sarif'
               output: 'trivy-results.sarif'
               severity: 'HIGH'
 
