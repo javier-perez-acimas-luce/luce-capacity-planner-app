@@ -114,9 +114,17 @@ definitions:
               SUBJECT: 'Bitbucket Pipe Notification for ${BITBUCKET_REPO_FULL_NAME} on branch ${BITBUCKET_BRANCH}'
     - step: &Security-scan
         name: 'Security scan'
+        service:
+          docker
         script:
-          - docker build -t myimage .
-          - docker run -i --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image --ignore-unfixed --severity HIGH,CRITICAL myimage
+          - pipe: aquasecurity/trivy-pipe:1.0.0
+            variables:
+              scanType: 'fs'
+              ignoreUnfixed: true
+              format: 'template'
+              template: '@/contrib/sarif.tpl'
+              output: 'trivy-results.sarif'
+              severity: 'CRITICAL'
 
 pipelines:
   default:
