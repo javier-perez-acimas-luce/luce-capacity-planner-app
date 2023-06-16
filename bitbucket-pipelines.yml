@@ -120,9 +120,9 @@ definitions:
           - pipe: aquasecurity/trivy-pipe:1.0.0
             variables:
               scanType: 'fs'
-              format: 'sarif'
-              output: 'trivy-results.sarif'
-              severity: 'HIGH'
+              format: 'table'
+              severity: 'HIGH,CRITICAL'
+              ignoreUnfixed: 'true'
 
 pipelines:
   default:
@@ -150,6 +150,9 @@ pipelines:
               trigger: 'manual'
           - step:
               <<: *Sonar-qube
+              trigger: 'manual'
+          - step:
+              <<: *Security-scan
               trigger: 'manual'
     develop:
       - step:
@@ -215,3 +218,4 @@ pipelines:
       - parallel:
           - step: *Lint-style
           - step: *Sonar-qube
+          - step: *Security-scan
