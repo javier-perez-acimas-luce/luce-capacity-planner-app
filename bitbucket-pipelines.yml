@@ -1,4 +1,4 @@
-image: python:3.8
+image: python:3.10
 # enable Docker for your repository
 options:
   docker: true
@@ -112,6 +112,17 @@ definitions:
               TO: $REPORTED_USER_EMAIL
               HOST: 'smtp.gmail.com'
               SUBJECT: 'Bitbucket Pipe Notification for ${BITBUCKET_REPO_FULL_NAME} on branch ${BITBUCKET_BRANCH}'
+    - step: &Security-scan
+        name: 'Security scan'
+        service:
+          docker
+        script:
+          - pipe: aquasecurity/trivy-pipe:1.0.0
+            variables:
+              scanType: 'fs'
+              format: 'table'
+              severity: 'HIGH,CRITICAL'
+              ignoreUnfixed: 'true'
 
 pipelines:
   default:
@@ -120,6 +131,7 @@ pipelines:
     - parallel:
         - step: *Lint-style
         - step: *Sonar-qube
+        - step: *Security-scan
   branches:
     '{feature/*,fix/*}':
       - step:
@@ -138,6 +150,9 @@ pipelines:
               trigger: 'manual'
           - step:
               <<: *Sonar-qube
+              trigger: 'manual'
+          - step:
+              <<: *Security-scan
               trigger: 'manual'
     develop:
       - step:
@@ -203,3 +218,4 @@ pipelines:
       - parallel:
           - step: *Lint-style
           - step: *Sonar-qube
+          - step: *Security-scan
