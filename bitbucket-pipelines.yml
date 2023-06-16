@@ -120,11 +120,10 @@ definitions:
           - pipe: aquasecurity/trivy-pipe:1.0.0
             variables:
               scanType: 'fs'
-              ignoreUnfixed: true
               format: 'template'
               template: '@/contrib/sarif.tpl'
               output: 'trivy-results.sarif'
-              severity: 'CRITICAL'
+              severity: 'HIGH'
 
 pipelines:
   default:
