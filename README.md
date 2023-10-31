@@ -66,84 +66,44 @@ List of the available services offers by the application and how to invoke them
 
 ## Project structure
 
-basic_webapp
-├── app_name
-│ ├── core
-│ │ └── ...
-│ ├── example
-│ │ └── module.py
-│ ├── utils
-│ │ ├── io.py
-│ │ └── requests.py
-│ └── main.py
-├── data
-│ └── config.yaml
-├── deployment
-│ ├── data
-│ │ └── example_data.csv
-│ ├── schemas
-│ │ └── example_schema.json
-│ └── scripts
-│ ├── artifacts
-│ │ └── deploy.sh
-│ └── infra
-│ └── infra.sh
-├── tests
-│ ├── example
-│ │ └── test_example_module.py
-│ ├── utils
-│ │ ├── test_utils_io.py
-│ │ └── test_utils_requests.py
-│ └── test_main.py
-├── .VERSION
-├── bitbucket-pipelines.yml
-├── conftest.py
-├── Dockerfile
-├── main.py
-├── README.md
-├── requirements.txt
-├── setup.py
-└── sonar-project.properties
-
-basic_webapp
-
-- app_name
-    - core
-        - ...
-    - example
-        - module.py
-    - utils
-        - io.py
-        - requests.py
-- main.py
-- data
-    - config.yaml
-- deployment
+- basic_webapp
+    - app_name
+        - core
+            - ...
+        - example
+            - module.py
+        - utils
+            - io.py
+            - requests.py
+        - main.py
     - data
-        - example_data.csv
-    - schemas
-        - example_schema.json
-    - scripts
-        - artifacts
-            - deploy.sh
-        - infra
-            - infra.sh
-- tests
-    - example
-        - test_example_module.py
-    - utils
-        - test_utils_io.py
-        - test_utils_requests.py
-    - test_main.py
-- .VERSION
-- bitbucket-pipelines.yml
-- conftest.py
-- Dockerfile
-- main.py
-- README.md
-- requirements.txt
-- setup.py
-- sonar-project.properties
+        - config.yaml
+    - deployment
+        - data
+            - example_data.csv
+        - schemas
+            - example_schema.json
+        - scripts
+            - artifacts
+                - deploy.sh
+            - infra
+                - infra.sh
+    - tests
+        - example
+            - test_example_module.py
+        - utils
+            - test_utils_io.py
+            - test_utils_requests.py
+        - test_main.py
+    - .VERSION
+    - bitbucket-pipelines.yml
+    - conftest.py
+    - Dockerfile
+    - main.py
+    - README.md
+    - requirements.txt
+    - setup.py
+    - sonar-project.properties
 
 ## Deploying the application
 
@@ -155,15 +115,12 @@ We use https://sites.google.com/luceit.es/luceit/otros/devops/devops-politica_de
 
 ## Changelog
 
-│ Version │ Date (last change) │ Developer │ Changes │
-│:-------:│:-------------------│:-------------:│:
-----------------------------------------------------------------------------------│
-│ v0.0.3 │ 31/10/2023 │ javier.perez │ Add new Readme block (project structure) and update libraries │
-│ v0.0.2 │ 01/02/2023 │ javier.perez │ Update libraries versions to Python 3.10 │
-│ v0.0.1 │ 01/06/2022 │ javier.perez │ Complete template version to deploy different python applications on Google Cloud
-│
-│ v0.0.0 │ 01/01/2022 │ teresa.paramo │ Template version to deploy a flask service on App Engine (GCP)
-│
+| Version | Date (last change) |   Developer   | Changes                                                                           |
+|:-------:|:-------------------|:-------------:|:----------------------------------------------------------------------------------|
+| v0.0.3  | 31/10/2023         | javier.perez  | Add new Readme block (project structure) and update libraries                     |
+| v0.0.2  | 01/02/2023         | javier.perez  | Update libraries versions to Python 3.10                                          |
+| v0.0.1  | 01/06/2022         | javier.perez  | Complete template version to deploy different python applications on Google Cloud |
+| v0.0.0  | 01/01/2022         | teresa.paramo | Template version to deploy a flask service on App Engine (GCP)                    |
 
 ## Authors
 
