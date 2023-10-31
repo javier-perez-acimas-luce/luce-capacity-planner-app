@@ -105,6 +105,46 @@ basic_webapp
 ├── setup.py
 └── sonar-project.properties
 
+basic_webapp
+
+- app_name
+    - core
+        - ...
+    - example
+        - module.py
+    - utils
+        - io.py
+        - requests.py
+- main.py
+- data
+    - config.yaml
+- deployment
+    - data
+        - example_data.csv
+    - schemas
+        - example_schema.json
+    - scripts
+        - artifacts
+            - deploy.sh
+        - infra
+            - infra.sh
+- tests
+    - example
+        - test_example_module.py
+    - utils
+        - test_utils_io.py
+        - test_utils_requests.py
+    - test_main.py
+- .VERSION
+- bitbucket-pipelines.yml
+- conftest.py
+- Dockerfile
+- main.py
+- README.md
+- requirements.txt
+- setup.py
+- sonar-project.properties
+
 ## Deploying the application
 
 List of the command or reference to the scripts to deploy de application. Automated deployment from bitbucket-pipelines
