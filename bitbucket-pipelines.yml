@@ -104,14 +104,17 @@ definitions:
     - step: &Notify-deployment
         name: 'Notify deployment'
         script:
-          - pipe: atlassian/email-notify:0.7.0
+          - ALERT_TYPE="Success"
+          - if [[ $BITBUCKET_EXIT_CODE -ne 0 ]]; then ALERT_TYPE="ERROR" ; fi
+          - pipe: atlassian/email-notify:0.11.0
             variables:
-              USERNAME: $SENDER_EMAIL
-              PASSWORD: $PASSWORD
-              FROM: $SENDER_EMAIL
-              TO: $REPORTED_USER_EMAIL
+              USERNAME: $BITBUCKET_EMAIL_NOTIFICATIONS
+              PASSWORD: $BITBUCKET_EMAIL_NOTIFICATIONS_PASSWORD
+              FROM: $BITBUCKET_EMAIL_NOTIFICATIONS
+              TO: $BITBUCKET_EMAIL_RECEIVERS
               HOST: 'smtp.gmail.com'
-              SUBJECT: 'Bitbucket Pipe Notification for ${BITBUCKET_REPO_FULL_NAME} on branch ${BITBUCKET_BRANCH}'
+              SUBJECT: '[Bitbucket] Pipe finish with ${ALERT_TYPE} for ${BITBUCKET_REPO_FULL_NAME} on branch ${BITBUCKET_BRANCH}'
+              BODY_PLAIN: "<p>Execution summary of bitbucket pipeline:</p><p><b>&emsp;PIPELINE EXECUTED: <a href='https://bitbucket.org/${BITBUCKET_WORKSPACE}/${BITBUCKET_REPO_SLUG}/addon/pipelines/home#!/results/${BITBUCKET_BUILD_NUMBER}'>build#${BITBUCKET_BUILD_NUMBER}</a></b></p><p><b>&emsp;PROJECT</b>: <a href='https://bitbucket.org/${BITBUCKET_WORKSPACE}/${BITBUCKET_REPO_SLUG}'>${BITBUCKET_REPO_FULL_NAME}</a></p><p><b>&emsp;BRANCH</b>: <a href='https://bitbucket.org/${BITBUCKET_WORKSPACE}/${BITBUCKET_REPO_SLUG}/src/${BITBUCKET_BRANCH}'>${BITBUCKET_BRANCH}</a></p>"
     - step: &Security-scan
         name: 'Security scan'
         service:
@@ -169,6 +172,9 @@ pipelines:
           <<: *Deploy-to-env
           trigger: 'manual'
           deployment: Test
+      - step:
+          trigger: 'manual'
+          <<: *Notify-deployment
     staging:
       - step: *Build
       - step:
@@ -182,6 +188,8 @@ pipelines:
               <<: *Integration-test
           - step:
               <<: *Validation-test
+      - step:
+          <<: *Notify-deployment
     master:
       - step:
           <<: *Build
@@ -210,6 +218,8 @@ pipelines:
           <<: *Deploy-to-env
           trigger: 'manual'
           deployment: Production
+      - step:
+          <<: *Notify-deployment
 
   pull-requests:
     '{feature/*,fix/*}':

@@ -117,6 +117,7 @@ We use https://sites.google.com/luceit.es/luceit/otros/devops/devops-politica_de
 
 | Version | Date (last change) |   Developer   | Changes                                                                           |
 |:-------:|:-------------------|:-------------:|:----------------------------------------------------------------------------------|
+| v0.1.0  | 08/11/2023         | javier.perez  | Add email step on bitbucket pipelines and update libraries                        |
 | v0.0.3  | 31/10/2023         | javier.perez  | Add new Readme block (project structure) and update libraries                     |
 | v0.0.2  | 01/02/2023         | javier.perez  | Update libraries versions to Python 3.10                                          |
 | v0.0.1  | 01/06/2022         | javier.perez  | Complete template version to deploy different python applications on Google Cloud |
