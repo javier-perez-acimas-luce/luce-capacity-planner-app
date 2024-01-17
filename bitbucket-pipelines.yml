@@ -170,6 +170,9 @@ pipelines:
           - step:
               <<: *Security-scan
               trigger: 'manual'
+          - step:
+              <<: *Security-credentials
+              trigger: 'manual'
     develop:
       - step:
           <<: *Build
@@ -242,3 +245,5 @@ pipelines:
           - step: *Lint-style
           - step: *Sonar-qube
           - step: *Security-scan
+          - step: *Security-credentials
+
