@@ -146,6 +146,7 @@ pipelines:
         - step: *Lint-style
         - step: *Sonar-qube
         - step: *Security-scan
+        - step: *Security-credentials
 
   branches:
     '{feature/*,fix/*}':
