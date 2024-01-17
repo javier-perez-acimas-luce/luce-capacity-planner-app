@@ -126,6 +126,17 @@ definitions:
               format: 'table'
               severity: 'HIGH,CRITICAL'
               ignoreUnfixed: 'true'
+    - step: &Security-credentials
+        name: 'Security scan - credentials'
+        script:
+          - pipe: atlassian/git-secrets-scan:1.5.0
+            variables:
+              # FILES: '<string>' # Optional.
+              # FILES_IGNORED: '<string>' # Optional.
+              # CUSTOM_PATTERN_ARGS: '<list>' of strings # Optional.
+              # ANNOTATION_SUMMARY: '<string>' # Optional.
+              # ANNOTATION_DESCRIPTION: '<string>' # Optional.
+              # DEBUG: '<boolean>' # Optional.
 
 pipelines:
   default:
@@ -135,6 +146,8 @@ pipelines:
         - step: *Lint-style
         - step: *Sonar-qube
         - step: *Security-scan
+        - step: *Security-credentials
+
   branches:
     '{feature/*,fix/*}':
       - step:
@@ -156,6 +169,9 @@ pipelines:
               trigger: 'manual'
           - step:
               <<: *Security-scan
+              trigger: 'manual'
+          - step:
+              <<: *Security-credentials
               trigger: 'manual'
     develop:
       - step:
@@ -229,3 +245,5 @@ pipelines:
           - step: *Lint-style
           - step: *Sonar-qube
           - step: *Security-scan
+          - step: *Security-credentials
+
