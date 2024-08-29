@@ -1,4 +1,4 @@
-image: python:3.10
+image: python:3.12
 # enable Docker for your repository
 options:
   docker: true
@@ -137,6 +137,16 @@ definitions:
               # ANNOTATION_SUMMARY: '<string>' # Optional.
               # ANNOTATION_DESCRIPTION: '<string>' # Optional.
               # DEBUG: '<boolean>' # Optional.
+    - step: &Clone-repo # Necesario crear claves ssh para conectar bitbucket con el destino
+        name: 'Clone repository to client repository'
+        image: alpine/git:latest
+        script:
+          - cd $BITBUCKET_CLONE_DIR
+          - echo "Sync with repo $GIT_URL"
+          - git remote add client-git $GIT_URL # git@GITSERVER.com:ORGANIZATION/REPOSITORY.git
+          - git remote show client-git
+          - git push
+          - echo "Repository Sync finished"
 
 pipelines:
   default:
@@ -188,9 +198,13 @@ pipelines:
           <<: *Deploy-to-env
           trigger: 'manual'
           deployment: Test
-      - step:
-          trigger: 'manual'
-          <<: *Notify-deployment
+      - parallel:
+        - step:
+            <<: *Clone-repo
+            trigger: 'manual'
+        - step:
+            trigger: 'manual'
+            <<: *Notify-deployment
     staging:
       - step: *Build
       - step:
@@ -204,8 +218,12 @@ pipelines:
               <<: *Integration-test
           - step:
               <<: *Validation-test
-      - step:
-          <<: *Notify-deployment
+      - parallel:
+        - step:
+            <<: *Clone-repo
+            trigger: 'manual'
+        - step:
+            <<: *Notify-deployment
     master:
       - step:
           <<: *Build
@@ -234,8 +252,12 @@ pipelines:
           <<: *Deploy-to-env
           trigger: 'manual'
           deployment: Production
-      - step:
-          <<: *Notify-deployment
+      - parallel:
+        - step:
+            <<: *Clone-repo
+            trigger: 'manual'
+        - step:
+            <<: *Notify-deployment
 
   pull-requests:
     '{feature/*,fix/*}':
