@@ -137,14 +137,16 @@ definitions:
               # ANNOTATION_SUMMARY: '<string>' # Optional.
               # ANNOTATION_DESCRIPTION: '<string>' # Optional.
               # DEBUG: '<boolean>' # Optional.
-    - step: &Clone-repo
+    - step: &Clone-repo # Necesario crear claves ssh para conectar bitbucket con el destino
         name: 'Clone repository to client repository'
         image: alpine/git:latest
         script:
           - cd $BITBUCKET_CLONE_DIR
+          - echo "Sync with repo $GIT_URL"
           - git remote add client-git $GIT_URL # git@GITSERVER.com:ORGANIZATION/REPOSITORY.git
           - git remote show client-git
           - git push
+          - echo "Repository Sync finished"
 
 pipelines:
   default:
