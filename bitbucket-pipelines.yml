@@ -53,6 +53,10 @@ definitions:
           - echo "Sonar scanner finished"
     - step: &Deploy-to-artifactory
         name: 'Deploy to artifactory'
+        runs-on:
+          - self.hosted
+          - linux
+          - luceit
         script:
           - echo "Save artifact and send to artifactory"
           - pip install twine
@@ -190,6 +194,10 @@ pipelines:
             - dist/*
       - step:
           name: 'Deploy to artifactory'
+          runs-on:
+            - self.hosted
+            - linux
+            - luceit
           script:
             - echo "Save artifact and send to artifactory"
             - pip install twine
@@ -241,6 +249,10 @@ pipelines:
             - git push origin --tags
       - step:
           name: 'Deploy to artifactory'
+          runs-on:
+            - self.hosted
+            - linux
+            - luceit
           script:
             - echo "Save artifact and send to artifactory"
             - pip install twine
