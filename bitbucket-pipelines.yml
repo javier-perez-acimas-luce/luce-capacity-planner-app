@@ -41,6 +41,10 @@ definitions:
           - echo "Test step finished"
     - step: &Sonar-qube
         name: 'Analyze on SonarQube'
+        runs-on:
+          - self.hosted
+          - linux
+          - luceit
         caches:
           - pip
         script:
