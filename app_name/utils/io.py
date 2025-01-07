@@ -85,7 +85,7 @@ def load_config_by_env():
     env = os.getenv('APP_ENV', 'pro')
     env = env.lower()
     if env in ['pro', 'prod']:
-        config_file = f"config.yaml"
+        config_file = "config.yaml"
     else:
         config_file = f"config_{env}.yaml"
     config = yaml.safe_load(pkgutil.get_data("data", config_file))

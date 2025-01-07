@@ -116,6 +116,7 @@ class LogManager:
         """
         return self.logger
 
+
 config = io.load_config_by_env()
 log_level = io.fetch_env_variable(config, 'LOG_LEVEL')
 timezone = io.fetch_env_variable(config, 'LOG_TIMEZONE')
