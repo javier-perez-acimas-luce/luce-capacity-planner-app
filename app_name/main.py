@@ -1,12 +1,10 @@
-import pkgutil
-
-import yaml
 from flask import Flask, jsonify, Response
 
 from app_name.utils import io
+from app_name.utils.logger import logger
 
 app = Flask(__name__)
-config = yaml.safe_load(pkgutil.get_data("data", "config.yaml"))
+config = io.load_config_by_env()
 
 
 @app.route("/")
@@ -17,8 +15,10 @@ def index() -> Response:
 def main():
     host = io.fetch_env_variable(config, 'HOST')
     port = io.fetch_env_variable(config, 'PORT')
+    logger.info(f"Running the app on {host}:{port}")
     app.run(host=host, port=port)
 
 
 if __name__ == '__main__':
+    logger.debug("Starting the app...")
     main()

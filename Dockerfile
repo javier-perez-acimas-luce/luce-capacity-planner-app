@@ -1,11 +1,11 @@
-FROM python:3.10-slim
+FROM python:3.12-slim
 LABEL maintainer="Luce Innovative Technologies"
 
 EXPOSE 8080
 
 ENV PORT="8080"
 ENV HOST="0.0.0.0"
-ENV LOGLEVEL=INFO
+ENV LOG_LEVEL=INFO
 
 WORKDIR /app
 COPY . .
@@ -20,4 +20,4 @@ RUN apt update && apt upgrade -y && apt install -y build-essential \
 
 USER luceit
 
-CMD exec gunicorn --bind $HOST:$PORT --workers 1 --threads 8 --timeout 0 --log-level=$LOGLEVEL main:app --chdir app_name
+CMD exec gunicorn --bind $HOST:$PORT --workers 1 --threads 8 --timeout 0 --log-level=$LOG_LEVEL main:app --chdir app_name
