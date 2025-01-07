@@ -1,30 +1,30 @@
-# To use logger in other modules:
-# from app_name.utils.logger import logger
-# logger.debug("This is a debug message")
-# logger.info("This is an info message")
-# logger.warning("This is a warning message")
-# logger.error("This is a error message")
-# logger.critical("This is a critical message")
-
 import logging
+from datetime import datetime
+
+from pytz import timezone as tz
 
 from app_name.utils import io
 
 
 class LogManager:
-    def __init__(self, name, level='INFO'):
+    _MSG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    _DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+
+    def __init__(self, name, level='INFO', timezone='UTC'):
         """
-        Initialize the LogManager with a logger name and log level.
+        Initialize the LogManager with a logger name, log level, and timezone.
 
         Args:
             name (str): The name of the logger.
-            level (str): The log level for the logger (default is 'info').
+            level (str): The log level for the logger (default is 'INFO').
+            timezone (str): The timezone for the logger (default is 'UTC').
         """
+        self.timezone = timezone
         self.logger = self._get_logger(name, level)
 
     def _get_logger(self, name, level):
         """
-        Create and configure a logger with the specified name and log level.
+        Create and configure a logger with the specified name, log level, and timezone.
 
         Args:
             name (str): The name of the logger.
@@ -35,7 +35,8 @@ class LogManager:
         """
         logger = logging.getLogger(name)
         logger = self._set_loglevel(logger, level)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter(self._MSG_FORMAT, datefmt=self._DATETIME_FORMAT)
+        formatter.converter = self._time_converter
         sh = logging.StreamHandler()
         sh.setFormatter(formatter)
         logger.addHandler(sh)
@@ -67,6 +68,17 @@ class LogManager:
         logger.setLevel(level_mapping.get(level, logging.INFO))
         return logger
 
+    def _time_converter(self, *args):
+        """
+        Convert the time to the specified timezone.
+
+        Returns:
+            time.struct_time: The converted time.
+        """
+        utc_dt = datetime.now(tz('UTC'))
+        local_dt = utc_dt.astimezone(tz(self.timezone))
+        return local_dt.timetuple()
+
     def get_logger(self):
         """
         Get the configured logger.
@@ -76,7 +88,7 @@ class LogManager:
         """
         return self.logger
 
-
 config = io.load_config_by_env()
 log_level = io.fetch_env_variable(config, 'LOG_LEVEL')
-logger = LogManager(name="app_name", level=log_level).get_logger()
+timezone = io.fetch_env_variable(config, 'LOG_TIMEZONE')
+logger = LogManager(name="app_name", level=log_level, timezone=timezone).get_logger()
