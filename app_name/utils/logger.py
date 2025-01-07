@@ -37,9 +37,37 @@ class LogManager:
         logger = self._set_loglevel(logger, level)
         formatter = logging.Formatter(self._MSG_FORMAT, datefmt=self._DATETIME_FORMAT)
         formatter.converter = self._time_converter
-        sh = logging.StreamHandler()
-        sh.setFormatter(formatter)
-        logger.addHandler(sh)
+        handler = self._create_handler(formatter)
+        logger = self._add_handler(logger, handler)
+        return logger
+
+    def _create_handler(self, formatter):
+        """
+        Create a logging handler with the specified formatter.
+        TODO: Change the handler creation to allow GCP logging and other logging services.
+
+        Args:
+            formatter (logging.Formatter): The formatter to set for the handler.
+
+        Returns:
+            logging.Handler: The created logging handler with the specified formatter.
+        """
+        handler = logging.StreamHandler()
+        handler.setFormatter(formatter)
+        return handler
+
+    def _add_handler(self, logger, handler):
+        """
+        Add a handler to the specified logger.
+
+        Args:
+            logger (logging.Logger): The logger to add the handler to.
+            handler (logging.Handler): The handler to add.
+
+        Returns:
+            logging.Logger: The logger with the added handler.
+        """
+        logger.addHandler(handler)
         return logger
 
     def _set_loglevel(self, logger, level):
