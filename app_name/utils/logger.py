@@ -9,8 +9,9 @@ from app_name.utils import io
 class LogManager:
     _MSG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     _DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+    _LOG_PATH = None
 
-    def __init__(self, name, level='INFO', timezone='UTC'):
+    def __init__(self, name, level='INFO', timezone='UTC', persist=False):
         """
         Initialize the LogManager with a logger name, log level, and timezone.
 
@@ -20,9 +21,10 @@ class LogManager:
             timezone (str): The timezone for the logger (default is 'UTC').
         """
         self.timezone = timezone
-        self.logger = self._get_logger(name, level)
+        self.name = name
+        self.logger = self._get_logger(name, level, persist)
 
-    def _get_logger(self, name, level):
+    def _get_logger(self, name, level, persist):
         """
         Create and configure a logger with the specified name, log level, and timezone.
 
@@ -39,12 +41,14 @@ class LogManager:
         formatter.converter = self._time_converter
         handler = self._create_handler(formatter)
         logger = self._add_handler(logger, handler)
+        if persist:
+            file_handler = self._create_handler(formatter, type='file')
+            logger = self._add_handler(logger, file_handler)
         return logger
 
-    def _create_handler(self, formatter):
+    def _create_handler(self, formatter, type='screen'):
         """
         Create a logging handler with the specified formatter.
-        TODO: Change the handler creation to allow GCP logging and other logging services.
 
         Args:
             formatter (logging.Formatter): The formatter to set for the handler.
@@ -52,7 +56,16 @@ class LogManager:
         Returns:
             logging.Handler: The created logging handler with the specified formatter.
         """
-        handler = logging.StreamHandler()
+        type = type.lower()
+        if type == "screen":
+            handler = logging.StreamHandler()
+        elif type == "file":
+            handler = logging.FileHandler(self.name + ".log", mode="a", encoding="utf-8")
+        elif type == "gcp":
+            #  TODO: Change the handler creation to allow GCP logging and other logging services.
+            raise NotImplementedError("GCP logging is not implemented yet.")
+        else:
+            handler = logging.StreamHandler()
         handler.setFormatter(formatter)
         return handler
 
@@ -120,4 +133,4 @@ class LogManager:
 config = io.load_config_by_env()
 log_level = io.fetch_env_variable(config, 'LOG_LEVEL')
 timezone = io.fetch_env_variable(config, 'LOG_TIMEZONE')
-logger = LogManager(name="app_name", level=log_level, timezone=timezone).get_logger()
+logger = LogManager(name="app_name", level=log_level, timezone=timezone, persist=False).get_logger()
