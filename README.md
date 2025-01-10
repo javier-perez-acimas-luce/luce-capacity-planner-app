@@ -117,6 +117,7 @@ We use https://sites.google.com/luceit.es/luceit/otros/devops/devops-politica_de
 
 | Version | Date (last change) |   Developer   | Changes                                                                           |
 |:-------:|:-------------------|:-------------:|:----------------------------------------------------------------------------------|
+| v0.2.1  | 10/01/2025         | javier.perez  | Add machine stats option to logs                                                  |
 | v0.2.0  | 07/01/2025         | javier.perez  | Add logger class and update libraries version                                     |
 | v0.1.1  | 28/08/2024         | javier.perez  | Add repository clone to client and update libraries version to Python 3.12        |
 | v0.1.0  | 08/11/2023         | javier.perez  | Add email step on bitbucket pipelines and update libraries                        |

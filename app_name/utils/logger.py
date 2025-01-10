@@ -1,43 +1,33 @@
 import logging
+import os
 from datetime import datetime
 
 from pytz import timezone as tz
 
 from app_name.utils import io
+from app_name.utils.machine_stats import machine_stats
 
 
 class LogManager:
-    _MSG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    _MSG_FORMAT = '%(asctime)s.%(msecs)d - %(name)s - ' + str(
+        os.getpid()) + ' - %(levelname)s - %(pathname)s:%(lineno)d - %(message)s'
+    _MSG_FORMAT_EXTENDED = '#Timestamp: %(asctime)s.%(msecs)d - #Logger_name: %(name)s - #PID: ' + str(
+        os.getpid()) + ' - #Log_level: %(levelname)s - #Source_path: %(pathname)s:%(lineno)d - #Function: %(funcName)s() - #Thread: [%(thread)d] %(threadName)s - #Task: %(taskName)s - #Process: %(process)d - #Message: %(message)s'
     _DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
     _LOG_PATH = None
 
-    def __init__(self, name, level='INFO', timezone='UTC', persist=False):
-        """
-        Initialize the LogManager with a logger name, log level, and timezone.
-
-        Args:
-            name (str): The name of the logger.
-            level (str): The log level for the logger (default is 'INFO').
-            timezone (str): The timezone for the logger (default is 'UTC').
-        """
+    def __init__(self, name, level='INFO', timezone='UTC', deep_log=0, persist=False):
         self.timezone = timezone
         self.name = name
-        self.logger = self._get_logger(name, level, persist)
+        self.logger = self._get_logger(name, level, deep_log, persist)
 
-    def _get_logger(self, name, level, persist):
-        """
-        Create and configure a logger with the specified name, log level, and timezone.
-
-        Args:
-            name (str): The name of the logger.
-            level (str): The log level for the logger.
-
-        Returns:
-            logging.Logger: The configured logger.
-        """
+    def _get_logger(self, name, level, deep_log, persist):
         logger = logging.getLogger(name)
         logger = self._set_loglevel(logger, level)
-        formatter = logging.Formatter(self._MSG_FORMAT, datefmt=self._DATETIME_FORMAT)
+        if deep_log == 0:
+            formatter = logging.Formatter(self._MSG_FORMAT, datefmt=self._DATETIME_FORMAT)
+        else:
+            formatter = logging.Formatter(self._MSG_FORMAT_EXTENDED, datefmt=self._DATETIME_FORMAT)
         formatter.converter = self._time_converter
         handler = self._create_handler(formatter)
         logger = self._add_handler(logger, handler)
@@ -47,22 +37,12 @@ class LogManager:
         return logger
 
     def _create_handler(self, formatter, type='screen'):
-        """
-        Create a logging handler with the specified formatter.
-
-        Args:
-            formatter (logging.Formatter): The formatter to set for the handler.
-
-        Returns:
-            logging.Handler: The created logging handler with the specified formatter.
-        """
         type = type.lower()
         if type == "screen":
             handler = logging.StreamHandler()
         elif type == "file":
             handler = logging.FileHandler(self.name + ".log", mode="a", encoding="utf-8")
         elif type == "gcp":
-            #  TODO: Change the handler creation to allow GCP logging and other logging services.
             raise NotImplementedError("GCP logging is not implemented yet.")
         else:
             handler = logging.StreamHandler()
@@ -70,30 +50,10 @@ class LogManager:
         return handler
 
     def _add_handler(self, logger, handler):
-        """
-        Add a handler to the specified logger.
-
-        Args:
-            logger (logging.Logger): The logger to add the handler to.
-            handler (logging.Handler): The handler to add.
-
-        Returns:
-            logging.Logger: The logger with the added handler.
-        """
         logger.addHandler(handler)
         return logger
 
     def _set_loglevel(self, logger, level):
-        """
-        Set the log level for the specified logger.
-
-        Args:
-            logger (logging.Logger): The logger to set the level for.
-            level (str): The log level to set.
-
-        Returns:
-            logging.Logger: The logger with the updated log level.
-        """
         level = level.upper()
         level_mapping = {
             'DEBUG': logging.DEBUG,
@@ -110,27 +70,29 @@ class LogManager:
         return logger
 
     def _time_converter(self, *args):
-        """
-        Convert the time to the specified timezone.
-
-        Returns:
-            time.struct_time: The converted time.
-        """
         utc_dt = datetime.now(tz('UTC'))
         local_dt = utc_dt.astimezone(tz(self.timezone))
         return local_dt.timetuple()
 
     def get_logger(self):
-        """
-        Get the configured logger.
-
-        Returns:
-            logging.Logger: The configured logger.
-        """
         return self.logger
 
 
+def log(message, stats_units='GB'):
+    return message + " - Stats: " + machine_stats.stats_to_message(stats_units)
+
 config = io.load_config_by_env()
-log_level = io.fetch_env_variable(config, 'LOG_LEVEL')
-timezone = io.fetch_env_variable(config, 'LOG_TIMEZONE')
-logger = LogManager(name="app_name", level=log_level, timezone=timezone, persist=False).get_logger()
+try:
+    log_level = io.fetch_env_variable(config, 'LOG_LEVEL')
+except KeyError:
+    log_level = 'INFO'
+try:
+    timezone = io.fetch_env_variable(config, 'LOG_TIMEZONE')
+except KeyError:
+    timezone = 'UTC'
+try:
+    deep_log = io.fetch_env_variable(config, 'DEEP_LOG')
+except KeyError:
+    deep_log = 0
+
+logger = LogManager(name="app_name", level=log_level, timezone=timezone, deep_log=deep_log, persist=False).get_logger()
