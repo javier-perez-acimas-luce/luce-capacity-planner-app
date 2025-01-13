@@ -5,7 +5,7 @@ from datetime import datetime
 from pytz import timezone as tz
 
 from app_name.utils import io
-from app_name.utils.machine_stats import machine_stats
+from app_name.utils.machine_stats import machine_stats, stats_log
 
 
 class LogManager:
@@ -161,7 +161,7 @@ def log(message, stats_units='GB'):
     Returns:
         str: The log message with appended machine stats.
     """
-    return message + " - Stats: " + machine_stats.stats_to_message(stats_units)
+    return stats_log(message, stats_units=stats_units, machine_stats=machine_stats)
 
 
 config = io.load_config_by_env()

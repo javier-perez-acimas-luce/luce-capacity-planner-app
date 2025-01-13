@@ -88,4 +88,21 @@ class MachineStats:
         return json.dumps(stats)
 
 
+def stats_log(message, stats_units='GB', machine_stats=None):
+    """
+    Appends machine stats to the log message.
+
+    Args:
+        message (str): The log message.
+        stats_units (str): The units for the machine stats (default is 'GB').
+
+    Returns:
+        str: The log message with appended machine stats.
+    """
+    if machine_stats is None:
+        machine_stats = MachineStats()
+
+    return message + " - Stats: " + machine_stats.stats_to_message(stats_units)
+
+
 machine_stats = MachineStats()
