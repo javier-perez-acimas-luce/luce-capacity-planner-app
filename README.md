@@ -56,6 +56,14 @@ Link to the architecture diagram of the application
 
 List of environment variables and how to populate it
 
+- ***APP_ENV***: environment where the application is running, used to select the configuration file (config_<APP_ENV>
+  .conf, if environment is prod -> config.yaml). Example values: dev, test, prod
+- ***HOST***: host where the application is running
+- ***PORT***: port where the application is running
+- ***LOG_LEVEL***: level of the logs to display. Example values: DEBUG, INFO, WARNING, ERROR, CRITICAL
+- ***LOG_TIMEZONE***: timezone to use in the logs. Example values: UTC, Europe/Madrid
+- ***DEEP_LOG***: flag to activate deep logs. Example values: 0, 1
+
 ## Running de application
 
 Explain how to configure and run the application
@@ -63,6 +71,11 @@ Explain how to configure and run the application
 ### Available services
 
 List of the available services offers by the application and how to invoke them
+
+- **/**
+    - index: GET method to check if the service is running
+    - params: none
+    - response: Application name and welcome message
 
 ## Project structure
 
@@ -74,6 +87,8 @@ List of the available services offers by the application and how to invoke them
             - module.py
         - utils
             - io.py
+          - logger.py
+          - machine_stats.py
             - requests.py
         - main.py
     - data
@@ -117,6 +132,7 @@ We use https://sites.google.com/luceit.es/luceit/otros/devops/devops-politica_de
 
 | Version | Date (last change) |   Developer   | Changes                                                                           |
 |:-------:|:-------------------|:-------------:|:----------------------------------------------------------------------------------|
+| v0.2.1  | 10/01/2025         | javier.perez  | Add machine stats option to logs                                                  |
 | v0.2.0  | 07/01/2025         | javier.perez  | Add logger class and update libraries version                                     |
 | v0.1.1  | 28/08/2024         | javier.perez  | Add repository clone to client and update libraries version to Python 3.12        |
 | v0.1.0  | 08/11/2023         | javier.perez  | Add email step on bitbucket pipelines and update libraries                        |
