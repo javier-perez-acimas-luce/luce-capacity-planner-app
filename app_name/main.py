@@ -6,6 +6,7 @@ from app_name.utils.logger import logger, log
 app = Flask(__name__)
 config = io.load_config_by_env()
 
+
 @app.route("/")
 def index() -> Response:
     return jsonify({"message": "Welcome message example"})
