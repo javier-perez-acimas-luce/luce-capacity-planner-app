@@ -4,7 +4,7 @@ from app_name.utils import io
 from app_name.utils.logger import logger, log
 from app_name.utils.metric import Metric
 from app_name.utils.monitoring import Monitoring
-from app_name.utils.writers import *
+from app_name.utils.writers import CsvWriter
 
 app = Flask(__name__)
 config = io.load_config_by_env()
@@ -24,7 +24,7 @@ def main():
     monitoring = Monitoring(CsvWriter("metrics.csv"))
     metric = Metric()  # add script common data to metric on development
     monitoring.write_metric(metric)
-    
+
     app.run(host=host, port=port)
 
 
