@@ -5,7 +5,7 @@ from datetime import datetime
 from pytz import timezone as tz
 
 from app_name.utils import io
-from app_name.utils.machine_stats import machine_stats, stats_log
+from .machine_stats import machine_stats, stats_log
 
 
 class LogManager:
@@ -21,6 +21,19 @@ class LogManager:
         os.getpid()) + ' - %(levelname)s - %(pathname)s:%(lineno)d - %(message)s'
     _MSG_FORMAT_EXTENDED = '#Timestamp: %(asctime)s.%(msecs)d - #Logger_name: %(name)s - #PID: ' + str(
         os.getpid()) + ' - #Log_level: %(levelname)s - #Source_path: %(pathname)s:%(lineno)d - #Function: %(funcName)s() - #Thread: [%(thread)d] %(threadName)s - #Task: %(taskName)s - #Process: %(process)d - #Message: %(message)s'
+    _MSG_FORMAT_JSON = {
+        "timestamp": "%(asctime)s.%(msecs)d",
+        "logger_name": "%(name)s",
+        "PID": str(os.getpid()),
+        "log_level": "%(levelname)s",
+        "source_path": "%(pathname)s:%(lineno)d",
+        "function": "%(funcName)s()",
+        "thread": "[%(thread)d] %(threadName)s",
+        "task": "%(taskName)s",
+        "process": "%(process)d",
+        "message": "%(message)s".split(" - Stats: "),
+        "machine_stats": "%(message)s".split(" - Stats: ")[1] if len("%(message)s".split(" - Stats: ")) > 1 else None
+    }
     _DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
     _LOG_PATH = None
 
