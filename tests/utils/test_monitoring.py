@@ -17,9 +17,6 @@ def monitoring(mock_writer):
 def test_write_metric(monitoring, mock_writer, mocker):
     metric = mocker.MagicMock(spec=Metric)
     monitoring.write_metric(metric)
-    metric.update_from_env.assert_called_once()
-    metric.update_timestamp.assert_called_once()
-    metric.update_machine_stats.assert_called_once()
     mock_writer.write.assert_called_once_with(metric.to_dict())
 
 

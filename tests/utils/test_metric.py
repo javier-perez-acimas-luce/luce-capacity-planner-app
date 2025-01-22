@@ -31,7 +31,7 @@ def test_update_timestamp(mocker, metric):
     mock_now.tzinfo = 'UTC'
     mock_datetime.now.return_value = mock_now
 
-    metric.update_timestamp()
+    metric._update_timestamp()
     assert metric.data['timestamp'] == '2023-01-01T00:00:00+00:00'
     assert metric.data['timezone'] == 'UTC'
     assert metric.data['execution_date'] == '2023-01-01'
@@ -41,6 +41,6 @@ def test_update_from_env(mocker, metric):
     mocker.patch.dict('os.environ', {'APP_ENV': 'test_env', 'LOG_TIMEZONE': 'UTC'})
     metric.data['app_env'] = None
     metric.data['timezone'] = None
-    metric.update_from_env()
+    metric._update_from_env()
     assert metric.data['app_env'] == 'test_env'
     assert metric.data['timezone'] == 'UTC'
