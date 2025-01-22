@@ -30,9 +30,6 @@ class Monitoring:
         Args:
             metric (Metric): The Metric instance to write.
         """
-        metric.update_from_env()
-        metric.update_timestamp()
-        metric.update_machine_stats()
         for writer in self.writers:
             writer.write(metric.to_dict())
 

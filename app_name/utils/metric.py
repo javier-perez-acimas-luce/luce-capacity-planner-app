@@ -18,6 +18,7 @@ class Metric:
         'script_id': None,  # The unique identifier for the script
         'script_name': None,  # The name of the script
         'process_id': os.getpid(),  # The process ID of the running script
+        'process_name': None,  # The name of the process
         'trigger_type': None,  # The type of trigger that started the pipeline (e.g., 'manual', 'scheduled')
         'trigger_name': None,  # The name of the trigger
         'root_process_type': None,  # The type of the root process (e.g., 'raw', 'master', 'analytic', 'validation')
@@ -38,6 +39,8 @@ class Metric:
         'execution_date': None,  # The date of execution
         'pipeline_start_ts': None,  # The timestamp when the pipeline started
         'pipeline_end_ts': None,  # The timestamp when the pipeline ended (if applicable)
+        'script_start_ts': None,  # The timestamp when the script started
+        'script_end_ts': None,  # The timestamp when the script ended (if applicable)
         'machine_stats': None,  # The machine statistics (e.g., CPU, memory usage)
         'var1': None,  # Additional variable 1
         'var2': None,  # Additional variable 2
@@ -45,10 +48,11 @@ class Metric:
     }
 
     def __init__(self, app_env=None, pipeline_id=None, pipeline_name=None, script_id=None, script_name=None,
-                 trigger_type=None, trigger_name=None, root_process_type=None, operation_type=None,
+                 process_name=None, trigger_type=None, trigger_name=None, root_process_type=None, operation_type=None,
                  function_name=None, rows=None, previous_rows=None, path=None, src_paths=None,
                  target_paths=None, min_business_date=None, max_business_date=None, pipeline_status=None,
-                 message=None, var1=None, var2=None, var3=None):
+                 message=None, pipeline_start_ts=None, pipeline_end_ts=None, script_start_ts=None,
+                 script_end_ts=None, var1=None, var2=None, var3=None):
         """
         Initializes the Metric with the given data.
 
@@ -58,6 +62,7 @@ class Metric:
             pipeline_name (str, optional): The name of the pipeline.
             script_id (str, optional): The unique identifier for the script.
             script_name (str, optional): The name of the script.
+            process_name (str, optional): The name of the process.
             trigger_type (str, optional): The type of trigger that started the pipeline.
             trigger_name (str, optional): The name of the trigger.
             root_process_type (str, optional): The type of the root process.
@@ -72,6 +77,10 @@ class Metric:
             max_business_date (str, optional): The maximum business date in the data.
             pipeline_status (str, optional): The status of the pipeline.
             message (str, optional): A message describing the current state or event.
+            pipeline_start_ts (datetime.datime,optional): The timestamp when the pipeline started
+            pipeline_end_ts (datetime.datetime,optional): The timestamp when the pipeline ended (if applicable)
+            script_start_ts (datetime.datime,optional): The timestamp when the script started
+            script_end_ts (datetime.datetime,optional): The timestamp when the script ended (if applicable)
             var1 (str, optional): Additional variable 1.
             var2 (str, optional): Additional variable 2.
             var3 (str, optional): Additional variable 3.
@@ -83,6 +92,7 @@ class Metric:
             'pipeline_name': pipeline_name,
             'script_id': script_id,
             'script_name': script_name,
+            'process_name': process_name,
             'trigger_type': trigger_type,
             'trigger_name': trigger_name,
             'root_process_type': root_process_type,
@@ -97,14 +107,18 @@ class Metric:
             'max_business_date': max_business_date,
             'pipeline_status': pipeline_status,
             'message': message,
+            'pipeline_start_ts': pipeline_start_ts,
+            'pipeline_end_ts': pipeline_end_ts,
+            'script_start_ts': script_start_ts,
+            'script_end_ts': script_end_ts,
             'var1': var1,
             'var2': var2,
             'var3': var3
         })
         self.machine_stats = MachineStats()
-        self.update_from_env()
-        self.update_timestamp()
-        self.update_machine_stats()
+        self._update_from_env()
+        self._update_timestamp()
+        self._update_machine_stats()
 
     def update_with_dict(self, data):
         """
@@ -112,17 +126,23 @@ class Metric:
 
         Args:
             data (dict): The data to update the metric with.
+
+        Returns:
+            Metric: The Metric instance.
         """
         self.data.update(data)
-        self.update_from_env()
-        self.update_timestamp()
-        self.update_machine_stats()
+        self._update_from_env()
+        self._update_timestamp()
+        self._update_machine_stats()
+        return self
 
     def update_with_params(self, app_env=None, pipeline_id=None, pipeline_name=None, script_id=None, script_name=None,
-                           trigger_type=None, trigger_name=None, root_process_type=None, operation_type=None,
+                           process_name=None, trigger_type=None, trigger_name=None, root_process_type=None,
+                           operation_type=None,
                            function_name=None, rows=None, previous_rows=None, path=None, src_paths=None,
                            target_paths=None, min_business_date=None, max_business_date=None, pipeline_status=None,
-                           message=None, var1=None, var2=None, var3=None):
+                           message=None, pipeline_start_ts=None, pipeline_end_ts=None, script_start_ts=None,
+                           script_end_ts=None, var1=None, var2=None, var3=None):
         """
         Updates the metric data with individual parameters.
         Be careful with this method, as it can overwrite existing data but don't delete it (use update_with_dict instead).
@@ -133,6 +153,7 @@ class Metric:
             pipeline_name (str, optional): The name of the pipeline.
             script_id (str, optional): The unique identifier for the script.
             script_name (str, optional): The name of the script.
+            process_name (str, optional): The name of the process.
             trigger_type (str, optional): The type of trigger that started the pipeline.
             trigger_name (str, optional): The name of the trigger.
             root_process_type (str, optional): The type of the root process.
@@ -147,9 +168,16 @@ class Metric:
             max_business_date (str, optional): The maximum business date in the data.
             pipeline_status (str, optional): The status of the pipeline.
             message (str, optional): A message describing the current state or event.
+            pipeline_start_ts (datetime.datime,optional): The timestamp when the pipeline started
+            pipeline_end_ts (datetime.datetime,optional): The timestamp when the pipeline ended (if applicable)
+            script_start_ts (datetime.datime,optional): The timestamp when the script started
+            script_end_ts (datetime.datetime,optional): The timestamp when the script ended (if applicable)
             var1 (str, optional): Additional variable 1.
             var2 (str, optional): Additional variable 2.
             var3 (str, optional): Additional variable 3.
+
+        Returns:
+            Metric: The Metric instance.
         """
         if app_env is not None:
             self.data['app_env'] = app_env
@@ -161,6 +189,8 @@ class Metric:
             self.data['script_id'] = script_id
         if script_name is not None:
             self.data['script_name'] = script_name
+        if process_name is not None:
+            self.data['process_name'] = process_name
         if trigger_type is not None:
             self.data['trigger_type'] = trigger_type
         if trigger_name is not None:
@@ -189,6 +219,14 @@ class Metric:
             self.data['pipeline_status'] = pipeline_status
         if message is not None:
             self.data['message'] = message
+        if pipeline_start_ts is not None:
+            self.data['pipeline_start_ts'] = pipeline_start_ts
+        if pipeline_end_ts is not None:
+            self.data['pipeline_end_ts'] = pipeline_end_ts
+        if script_start_ts is not None:
+            self.data['script_start_ts'] = script_start_ts
+        if script_end_ts is not None:
+            self.data['script_end_ts'] = script_end_ts
         if var1 is not None:
             self.data['var1'] = var1
         if var2 is not None:
@@ -196,11 +234,13 @@ class Metric:
         if var3 is not None:
             self.data['var3'] = var3
 
-        self.update_from_env()
-        self.update_timestamp()
-        self.update_machine_stats()
+        self._update_from_env()
+        self._update_timestamp()
+        self._update_machine_stats()
 
-    def update_timestamp(self):
+        return self
+
+    def _update_timestamp(self):
         """
         Updates the timestamp and timezone in the metric data.
         """
@@ -209,14 +249,14 @@ class Metric:
         self.data['timezone'] = str(now.tzinfo)
         self.data['execution_date'] = now.date().isoformat()
 
-    def update_machine_stats(self):
+    def _update_machine_stats(self):
         """
         Updates the timestamp and timezone in the metric data.
         """
         self.machine_stats.refresh_stats()
         self.data['machine_stats'] = self.machine_stats.stats_to_message(unit='GB')
 
-    def update_from_env(self):
+    def _update_from_env(self):
         """
         Updates the metric data with values from environment variables if they are not provided.
         """
@@ -228,11 +268,15 @@ class Metric:
             if self.data.get(key) is None:
                 self.data[key] = os.getenv(env_var)
 
-    def to_dict(self):
+    def to_dict(self, update=True):
         """
         Returns the metric data as a dictionary.
 
         Returns:
             dict: The metric data.
         """
+        if update:
+            self._update_from_env()
+            self._update_timestamp()
+            self._update_machine_stats()
         return self.data
