@@ -34,15 +34,16 @@ class Monitoring(object):
         else:
             self.writers = [writers]
 
-    def write_metric(self, metric: Metric):
+    def write_metric(self, metric: Metric, new_values: Optional[Dict] = None):
         """
         Writes the metric using the specified writers.
 
         Args:
             metric (Metric): The Metric instance to write.
+            new_values (Optional[Dict]): The new values to update in the metric.
         """
         for writer in self.writers:
-            writer.write(metric.to_dict())
+            writer.write(metric.to_dict(new_values=new_values))
 
     def write_metric_from_dict(self, metric_data: Dict):
         """

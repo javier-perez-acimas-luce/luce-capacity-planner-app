@@ -301,9 +301,13 @@ class Metric(object):
             if self.data.get(key) is None:
                 self.data[key] = os.getenv(env_var)
 
-    def to_dict(self, update=True):
+    def to_dict(self, new_values=None, update=True):
         """
-        Returns the metric data as a dictionary.
+        Returns the metric data as a dictionary, optionally applying temporary changes.
+
+        Args:
+            new_values (dict, optional): Temporary changes to apply to the metric data.
+            update (bool): Whether to update the metric data before returning it.
 
         Returns:
             dict: The metric data.
@@ -312,4 +316,10 @@ class Metric(object):
             self._update_from_env()
             self._update_timestamp()
             self._update_machine_stats()
-        return self.data
+
+        data_copy = self.data.copy()
+
+        if new_values:
+            data_copy.update(new_values)
+
+        return data_copy
