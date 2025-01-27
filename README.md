@@ -64,11 +64,11 @@ List of environment variables and how to populate it
 - ***LOG_TIMEZONE***: timezone to use in the logs. Example values: UTC, Europe/Madrid
 - ***DEEP_LOG***: flag to activate deep logs. Example values: 0, 1
 
-## Running de application
+## Running the application
 
 Explain how to configure and run the application
 
-### Available services
+## Available services
 
 List of the available services offers by the application and how to invoke them
 
@@ -132,6 +132,7 @@ We use https://sites.google.com/luceit.es/luceit/otros/devops/devops-politica_de
 
 | Version | Date (last change) |   Developer   | Changes                                                                           |
 |:-------:|:-------------------|:-------------:|:----------------------------------------------------------------------------------|
+| v0.3.0  | 27/01/2025         | javier.perez  | Add monitoring and metric class to control                                        |
 | v0.2.1  | 10/01/2025         | javier.perez  | Add machine stats option to logs                                                  |
 | v0.2.0  | 07/01/2025         | javier.perez  | Add logger class and update libraries version                                     |
 | v0.1.1  | 28/08/2024         | javier.perez  | Add repository clone to client and update libraries version to Python 3.12        |
