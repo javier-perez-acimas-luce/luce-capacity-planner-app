@@ -1,10 +1,21 @@
+"""
+This module provides the Monitoring class for writing metrics to various destinations using different writer classes.
+
+Classes:
+    Monitoring: Uses different writer classes to write metrics to various destinations.
+
+Methods:
+    __init__(writers: Optional[Union[Writer, List[Writer]]]): Initializes the Monitoring with the given writer(s).
+    write_metric(metric: Metric): Writes the metric using the specified writers.
+    write_metric_from_dict(metric_data: Dict): Writes the metric using the specified writers from a dictionary.
+"""
 from typing import Optional, Union, List, Dict
 
 from .metric import Metric
 from .writers import Writer
 
 
-class Monitoring:
+class Monitoring(object):
     """
     Monitoring class that uses different writer classes to write metrics to various destinations.
     """

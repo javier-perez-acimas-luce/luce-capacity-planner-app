@@ -1,3 +1,20 @@
+"""
+This module provides logging functionality for the application, including the LogManager class for configuring loggers
+and the log function for appending machine stats to log messages.
+
+Classes:
+    LogManager: Manages the logging configuration for the application.
+
+Functions:
+    log(message, stats_units='GB'): Appends machine stats to the log message.
+
+Attributes:
+    config (dict): The configuration loaded from the environment.
+    log_level (str): The logging level fetched from the environment.
+    timezone (str): The timezone for log timestamps fetched from the environment.
+    deep_log (int): Flag to activate deep logging fetched from the environment.
+    logger (logging.Logger): The configured logger instance.
+"""
 import logging
 import os
 from datetime import datetime
@@ -8,7 +25,7 @@ from app_name.utils import io
 from .machine_stats import machine_stats, stats_log
 
 
-class LogManager:
+class LogManager(object):
     """
     LogManager is responsible for setting up and managing the logging configuration for the application.
 

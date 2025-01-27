@@ -22,7 +22,8 @@ def main():
     logger.info(log(f"Running the app on {host}:{port}"))
 
     monitoring = Monitoring(CsvWriter("metrics.csv"))
-    metric = Metric()  # add script common data to metric on development
+    # Add script common data to metric on development
+    metric = Metric()
     monitoring.write_metric(metric)
 
     app.run(host=host, port=port)

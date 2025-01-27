@@ -1,3 +1,10 @@
+"""
+This module provides utility functions for various operations, including converting a list to a concatenated string.
+
+Functions:
+    list_to_string(s: list) -> str: Converts a list of elements to a single concatenated string.
+"""
+
 def list_to_string(s: list) -> str:
     """
     Converts a list of elements to a single concatenated string.

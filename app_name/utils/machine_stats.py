@@ -1,10 +1,20 @@
+"""
+This module provides logging functionality for the application, including the LogManager class for configuring loggers
+and the log function for appending machine stats to log messages.
+
+Classes:
+    LogManager: Manages the logging configuration for the application.
+
+Functions:
+    log(message, stats_units='GB'): Appends machine stats to the log message.
+"""
 import json
 import time
 
 import psutil
 
 
-class MachineStats:
+class MachineStats(object):
     """
     MachineStats is responsible for collecting and providing system statistics.
 

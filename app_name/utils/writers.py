@@ -1,3 +1,14 @@
+"""
+This module provides various writer classes for writing metrics to different destinations, including files, databases, and queues.
+
+Classes:
+    Writer: Abstract base class for writing metrics.
+    FileWriter: Writes metrics to a file.
+    ParquetWriter: Writes metrics to a .parquet file.
+    CsvWriter: Writes metrics to a CSV file.
+    DBWriter: Writes metrics to a database.
+    QueueWriter: Writes metrics to a queue.
+"""
 import json
 import logging
 from abc import ABC, abstractmethod
