@@ -162,7 +162,9 @@ pipelines:
     - step: *Unit-Test
     - parallel:
         - step: *Lint-style
-        - step: *Sonar-qube
+        - step:
+            <<: *Sonar-qube
+            size: 2x
         - step: *Security-scan
         - step: *Security-credentials
 
@@ -184,6 +186,7 @@ pipelines:
               trigger: 'manual'
           - step:
               <<: *Sonar-qube
+              size: 2x
               trigger: 'manual'
           - step:
               <<: *Security-scan
@@ -281,7 +284,9 @@ pipelines:
       - step: *Unit-Test
       - parallel:
           - step: *Lint-style
-          - step: *Sonar-qube
+          - step:
+              <<: *Sonar-qube
+              size: 2x
           - step: *Security-scan
           - step: *Security-credentials
 
