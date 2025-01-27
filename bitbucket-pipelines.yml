@@ -164,7 +164,7 @@ pipelines:
         - step: *Lint-style
         - step:
             <<: *Sonar-qube
-            size: 2x
+            size: 4x
         - step: *Security-scan
         - step: *Security-credentials
 
@@ -186,7 +186,7 @@ pipelines:
               trigger: 'manual'
           - step:
               <<: *Sonar-qube
-              size: 2x
+              size: 4x
               trigger: 'manual'
           - step:
               <<: *Security-scan
@@ -286,7 +286,7 @@ pipelines:
           - step: *Lint-style
           - step:
               <<: *Sonar-qube
-              size: 2x
+              size: 4x
           - step: *Security-scan
           - step: *Security-credentials
 
