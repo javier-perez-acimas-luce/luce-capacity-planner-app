@@ -1,0 +1,28 @@
+openapi: 3.1.0
+info:
+  title: Python AppEngine Service
+  description: A basic web service with Flask and GCP App Engine project format.
+  version: 0.3.0
+servers:
+  - url: 'http://{host}:{port}'
+    variables:
+      host:
+        default: 'localhost'
+      port:
+        default: '5000'
+paths:
+  /:
+    get:
+      summary: Check if the service is running
+      description: Returns a welcome message to indicate the service is running.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Welcome message example

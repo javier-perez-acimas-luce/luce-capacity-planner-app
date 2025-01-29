@@ -1,3 +1,20 @@
+"""
+This module provides logging functionality for the application, including the LogManager class for configuring loggers
+and the log function for appending machine stats to log messages.
+
+Classes:
+    LogManager: Manages the logging configuration for the application.
+
+Functions:
+    log(message, stats_units='GB'): Appends machine stats to the log message.
+
+Attributes:
+    config (dict): The configuration loaded from the environment.
+    log_level (str): The logging level fetched from the environment.
+    timezone (str): The timezone for log timestamps fetched from the environment.
+    deep_log (int): Flag to activate deep logging fetched from the environment.
+    logger (logging.Logger): The configured logger instance.
+"""
 import logging
 import os
 from datetime import datetime
@@ -5,10 +22,10 @@ from datetime import datetime
 from pytz import timezone as tz
 
 from app_name.utils import io
-from app_name.utils.machine_stats import machine_stats, stats_log
+from .machine_stats import machine_stats, stats_log
 
 
-class LogManager:
+class LogManager(object):
     """
     LogManager is responsible for setting up and managing the logging configuration for the application.
 
@@ -21,8 +38,21 @@ class LogManager:
         os.getpid()) + ' - %(levelname)s - %(pathname)s:%(lineno)d - %(message)s'
     _MSG_FORMAT_EXTENDED = '#Timestamp: %(asctime)s.%(msecs)d - #Logger_name: %(name)s - #PID: ' + str(
         os.getpid()) + ' - #Log_level: %(levelname)s - #Source_path: %(pathname)s:%(lineno)d - #Function: %(funcName)s() - #Thread: [%(thread)d] %(threadName)s - #Task: %(taskName)s - #Process: %(process)d - #Message: %(message)s'
+    _MSG_FORMAT_JSON = {
+        "timestamp": "%(asctime)s.%(msecs)d",
+        "logger_name": "%(name)s",
+        "PID": str(os.getpid()),
+        "log_level": "%(levelname)s",
+        "source_path": "%(pathname)s:%(lineno)d",
+        "function": "%(funcName)s()",
+        "thread": "[%(thread)d] %(threadName)s",
+        "task": "%(taskName)s",
+        "process": "%(process)d",
+        "message": "%(message)s".split(" - Stats: "),
+        "machine_stats": "%(message)s".split(" - Stats: ")[1] if len("%(message)s".split(" - Stats: ")) > 1 else None
+    }
     _DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
-    _LOG_PATH = None
+    _LOG_PATH = "logs/"
 
     def __init__(self, name, level='INFO', timezone='UTC', deep_log=0, persist=False):
         """
@@ -81,7 +111,7 @@ class LogManager:
         if type == "screen":
             handler = logging.StreamHandler()
         elif type == "file":
-            handler = logging.FileHandler(self.name + ".log", mode="a", encoding="utf-8")
+            handler = logging.FileHandler(self._LOG_PATH + self.name + ".log", mode="a", encoding="utf-8")
         elif type == "gcp":
             raise NotImplementedError("GCP logging is not implemented yet.")
         else:

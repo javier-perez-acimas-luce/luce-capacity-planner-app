@@ -26,7 +26,7 @@ definitions:
           - if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           - pip install pytest
           - echo "Running test..."
-          - pytest -v --junitxml=pytest-report.xml --cov=. --cov-report xml
+          - pytest tests/unit/ -v --junitxml=pytest-report.xml --cov=. --cov-report xml
           - echo "Test step finished"
         artifacts:
           - coverage.xml
