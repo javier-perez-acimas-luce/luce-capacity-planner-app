@@ -17,7 +17,7 @@ def test_load_config(root_dir):
 
 def test_is_key_in_config_file_raises_exception():
     with pytest.raises(Exception):
-        io.is_key_in_config_file(None, "test_key")
+        io.is_key_in_config_file(None, "test_key", None)
 
 
 def test_fetch_env_variable_raises_error_when_not_set(config):

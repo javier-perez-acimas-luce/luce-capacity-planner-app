@@ -26,7 +26,7 @@ definitions:
           - if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           - pip install pytest
           - echo "Running test..."
-          - pytest -v --junitxml=pytest-report.xml --cov=. --cov-report xml
+          - pytest tests/unit/ -v --junitxml=pytest-report.xml --cov=. --cov-report xml
           - echo "Test step finished"
         artifacts:
           - coverage.xml
@@ -162,9 +162,7 @@ pipelines:
     - step: *Unit-Test
     - parallel:
         - step: *Lint-style
-        - step:
-            <<: *Sonar-qube
-            size: 4x
+        - step: *Sonar-qube
         - step: *Security-scan
         - step: *Security-credentials
 
@@ -186,7 +184,6 @@ pipelines:
               trigger: 'manual'
           - step:
               <<: *Sonar-qube
-              size: 4x
               trigger: 'manual'
           - step:
               <<: *Security-scan
@@ -284,9 +281,7 @@ pipelines:
       - step: *Unit-Test
       - parallel:
           - step: *Lint-style
-          - step:
-              <<: *Sonar-qube
-              size: 4x
+          - step: *Sonar-qube
           - step: *Security-scan
           - step: *Security-credentials
 

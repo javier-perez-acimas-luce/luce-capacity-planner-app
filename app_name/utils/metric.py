@@ -66,7 +66,7 @@ class Metric(object):
         # The maximum business date in the data
         'max_business_date': None,
         # The status of the pipeline (e.g., 'running', 'completed', 'failed')
-        'pipeline_status': None,
+        'status': None,
         # A message describing the current state or event
         'message': None,
         # The timestamp of the metric
@@ -96,7 +96,7 @@ class Metric(object):
     def __init__(self, app_env=None, pipeline_id=None, pipeline_name=None, script_id=None, script_name=None,
                  process_name=None, trigger_type=None, trigger_name=None, root_process_type=None, operation_type=None,
                  function_name=None, rows=None, previous_rows=None, path=None, src_paths=None,
-                 target_paths=None, min_business_date=None, max_business_date=None, pipeline_status=None,
+                 target_paths=None, min_business_date=None, max_business_date=None, status=None,
                  message=None, pipeline_start_ts=None, pipeline_end_ts=None, script_start_ts=None,
                  script_end_ts=None, var1=None, var2=None, var3=None):
         """
@@ -121,7 +121,7 @@ class Metric(object):
             target_paths (list, optional): The target file paths of the script.
             min_business_date (str, optional): The minimum business date in the data.
             max_business_date (str, optional): The maximum business date in the data.
-            pipeline_status (str, optional): The status of the pipeline.
+            status (str, optional): The status of the execution.
             message (str, optional): A message describing the current state or event.
             pipeline_start_ts (datetime.datime,optional): The timestamp when the pipeline started
             pipeline_end_ts (datetime.datetime,optional): The timestamp when the pipeline ended (if applicable)
@@ -151,7 +151,7 @@ class Metric(object):
             'target_paths': target_paths,
             'min_business_date': min_business_date,
             'max_business_date': max_business_date,
-            'pipeline_status': pipeline_status,
+            'status': status,
             'message': message,
             'pipeline_start_ts': pipeline_start_ts,
             'pipeline_end_ts': pipeline_end_ts,
@@ -186,7 +186,7 @@ class Metric(object):
                            process_name=None, trigger_type=None, trigger_name=None, root_process_type=None,
                            operation_type=None, function_name=None, rows=None, previous_rows=None, path=None,
                            src_paths=None,
-                           target_paths=None, min_business_date=None, max_business_date=None, pipeline_status=None,
+                           target_paths=None, min_business_date=None, max_business_date=None, status=None,
                            message=None, pipeline_start_ts=None, pipeline_end_ts=None, script_start_ts=None,
                            script_end_ts=None, var1=None, var2=None, var3=None):
         """
@@ -212,7 +212,7 @@ class Metric(object):
             target_paths (list, optional): The target file paths of the script.
             min_business_date (str, optional): The minimum business date in the data.
             max_business_date (str, optional): The maximum business date in the data.
-            pipeline_status (str, optional): The status of the pipeline.
+            status (str, optional): The status of the execution.
             message (str, optional): A message describing the current state or event.
             pipeline_start_ts (datetime.datime,optional): The timestamp when the pipeline started
             pipeline_end_ts (datetime.datetime,optional): The timestamp when the pipeline ended (if applicable)
@@ -244,7 +244,7 @@ class Metric(object):
             'target_paths': target_paths,
             'min_business_date': min_business_date,
             'max_business_date': max_business_date,
-            'pipeline_status': pipeline_status,
+            'status': status,
             'message': message,
             'pipeline_start_ts': pipeline_start_ts,
             'pipeline_end_ts': pipeline_end_ts,

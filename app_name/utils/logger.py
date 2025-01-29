@@ -52,7 +52,7 @@ class LogManager(object):
         "machine_stats": "%(message)s".split(" - Stats: ")[1] if len("%(message)s".split(" - Stats: ")) > 1 else None
     }
     _DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
-    _LOG_PATH = None
+    _LOG_PATH = "logs/"
 
     def __init__(self, name, level='INFO', timezone='UTC', deep_log=0, persist=False):
         """
@@ -111,7 +111,7 @@ class LogManager(object):
         if type == "screen":
             handler = logging.StreamHandler()
         elif type == "file":
-            handler = logging.FileHandler(self.name + ".log", mode="a", encoding="utf-8")
+            handler = logging.FileHandler(self._LOG_PATH + self.name + ".log", mode="a", encoding="utf-8")
         elif type == "gcp":
             raise NotImplementedError("GCP logging is not implemented yet.")
         else:
