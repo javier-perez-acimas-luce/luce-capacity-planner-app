@@ -132,6 +132,7 @@ We use https://sites.google.com/luceit.es/luceit/otros/devops/devops-politica_de
 
 | Version | Date (last change) |   Developer   | Changes                                                                           |
 |:-------:|:-------------------|:-------------:|:----------------------------------------------------------------------------------|
+| v0.4.0  | 04/02/2025         | javier.perez  | Add data encryption classes                                                       |
 | v0.3.0  | 27/01/2025         | javier.perez  | Add monitoring and metric class to control                                        |
 | v0.2.1  | 10/01/2025         | javier.perez  | Add machine stats option to logs                                                  |
 | v0.2.0  | 07/01/2025         | javier.perez  | Add logger class and update libraries version                                     |
