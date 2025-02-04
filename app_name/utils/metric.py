@@ -55,6 +55,10 @@ class Metric(object):
         'rows': None,
         # The number of rows processed in the last operation
         'previous_rows': None,
+        # The number of columns processed
+        'columns': None,
+        # The number of columns processed in the last operation
+        'previous_columns': None,
         # The file of the operation
         'path': None,
         # The source file paths of the script
@@ -95,7 +99,8 @@ class Metric(object):
 
     def __init__(self, app_env=None, pipeline_id=None, pipeline_name=None, script_id=None, script_name=None,
                  process_name=None, trigger_type=None, trigger_name=None, root_process_type=None, operation_type=None,
-                 function_name=None, rows=None, previous_rows=None, path=None, src_paths=None,
+                 function_name=None, rows=None, previous_rows=None, columns=None, previous_columns=None, path=None,
+                 src_paths=None,
                  target_paths=None, min_business_date=None, max_business_date=None, status=None,
                  message=None, pipeline_start_ts=None, pipeline_end_ts=None, script_start_ts=None,
                  script_end_ts=None, var1=None, var2=None, var3=None):
@@ -116,6 +121,8 @@ class Metric(object):
             function_name (str, optional): The name of the function being executed.
             rows (int, optional): The number of rows processed.
             previous_rows (int, optional): The number of rows processed in the last operation.
+            columns (int, optional): The number of columns processed.
+            previous_columns (int, optional): The number of columns processed in the last operation.
             path (str, optional): The file of the operation.
             src_paths (list, optional): The source file paths of the script.
             target_paths (list, optional): The target file paths of the script.
@@ -132,7 +139,8 @@ class Metric(object):
             var3 (str, optional): Additional variable 3.
         """
         self.data = self.DEFAULT_SCHEMA.copy()
-        self.data.update({
+        self.machine_stats = MachineStats()
+        self.update_with_dict({
             'app_env': app_env,
             'pipeline_id': pipeline_id,
             'pipeline_name': pipeline_name,
@@ -146,6 +154,8 @@ class Metric(object):
             'function_name': function_name,
             'rows': rows,
             'previous_rows': previous_rows,
+            'columns': columns,
+            'previous_columns': previous_columns,
             'path': path,
             'src_paths': src_paths,
             'target_paths': target_paths,
@@ -161,10 +171,6 @@ class Metric(object):
             'var2': var2,
             'var3': var3
         })
-        self.machine_stats = MachineStats()
-        self._update_from_env()
-        self._update_timestamp()
-        self._update_machine_stats()
 
     def update_with_dict(self, data):
         """
@@ -184,11 +190,11 @@ class Metric(object):
 
     def update_with_params(self, app_env=None, pipeline_id=None, pipeline_name=None, script_id=None, script_name=None,
                            process_name=None, trigger_type=None, trigger_name=None, root_process_type=None,
-                           operation_type=None, function_name=None, rows=None, previous_rows=None, path=None,
-                           src_paths=None,
-                           target_paths=None, min_business_date=None, max_business_date=None, status=None,
-                           message=None, pipeline_start_ts=None, pipeline_end_ts=None, script_start_ts=None,
-                           script_end_ts=None, var1=None, var2=None, var3=None):
+                           operation_type=None, function_name=None, rows=None, previous_rows=None, columns=None,
+                           previous_columns=None, path=None,
+                           src_paths=None, target_paths=None, min_business_date=None, max_business_date=None,
+                           status=None, message=None, pipeline_start_ts=None, pipeline_end_ts=None,
+                           script_start_ts=None, script_end_ts=None, var1=None, var2=None, var3=None):
         """
         Updates the metric data with individual parameters.
         Be careful with this method, as it can overwrite existing data but don't delete it (use update_with_dict instead).
@@ -207,6 +213,8 @@ class Metric(object):
             function_name (str, optional): The name of the function being executed.
             rows (int, optional): The number of rows processed.
             previous_rows (int, optional): The number of rows processed in the last operation.
+            columns (int, optional): The number of columns processed.
+            previous_columns (int, optional): The number of columns processed in the last operation.
             path (str, optional): The file of the operation.
             src_paths (list, optional): The source file paths of the script.
             target_paths (list, optional): The target file paths of the script.
@@ -239,6 +247,8 @@ class Metric(object):
             'function_name': function_name,
             'rows': rows,
             'previous_rows': previous_rows,
+            'columns': columns,
+            'previous_columns': previous_columns,
             'path': path,
             'src_paths': src_paths,
             'target_paths': target_paths,
