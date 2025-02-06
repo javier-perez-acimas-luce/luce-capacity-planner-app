@@ -111,6 +111,8 @@ class LogManager(object):
         if type == "screen":
             handler = logging.StreamHandler()
         elif type == "file":
+            if not os.path.exists(self._LOG_PATH):
+                os.makedirs(self._LOG_PATH)
             handler = logging.FileHandler(self._LOG_PATH + self.name + ".log", mode="a", encoding="utf-8")
         elif type == "gcp":
             raise NotImplementedError("GCP logging is not implemented yet.")

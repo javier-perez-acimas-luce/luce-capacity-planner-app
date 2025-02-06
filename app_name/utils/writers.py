@@ -11,6 +11,7 @@ Classes:
 """
 import json
 import logging
+import os
 from abc import ABC, abstractmethod
 
 import pandas as pd
@@ -20,10 +21,18 @@ class Writer(ABC):
     """
     Interfaz de clase Writer para escribir métricas.
     """
+    base_path = 'logs/'
 
     @abstractmethod
     def write(self, metric):
         pass
+
+    def set_base_path(self, base_path):
+        self.base_path = base_path
+
+    def create_base_path(self):
+        if not os.path.exists(self.base_path):
+            os.makedirs(self.base_path)
 
 
 class FileWriter(Writer):
@@ -49,7 +58,8 @@ class ParquetWriter(Writer):
     """
 
     def __init__(self, file_path):
-        self.file_path = file_path
+        self.file_path = super().base_path + file_path
+        super().create_base_path()
 
     def write(self, metric):
         df = pd.DataFrame([metric])
@@ -62,7 +72,8 @@ class CsvWriter(Writer):
     """
 
     def __init__(self, file_path):
-        self.file_path = file_path
+        self.file_path = super().base_path + file_path
+        super().create_base_path()
 
     def write(self, metric):
         df = pd.DataFrame([metric])
