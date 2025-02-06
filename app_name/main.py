@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 
 import pytz
+from flasgger import Swagger
 from flask import Flask, jsonify, Response
 
 from app_name.utils import io
@@ -14,9 +15,24 @@ app = Flask(__name__)
 config = io.load_config_by_env()
 SCRIPT_START_TS = datetime.now(pytz.utc).isoformat()
 
+# Obtener la ruta absoluta del archivo swagger.yaml
+base_dir = os.path.abspath(os.path.dirname(__file__))  # Ruta de la carpeta src/
+swagger_path = os.path.join(base_dir, '..', 'swagger.yaml')  # Subir un nivel y apuntar a swagger.yaml
+# Configurar Swagger para que use el archivo swagger.yaml
+swagger = Swagger(app, template_file=swagger_path)
 
-@app.route("/")
+
+@app.route("/", methods=['GET'])
 def index() -> Response:
+    """
+    Un simple endpoint de bienvenida.
+    ---
+    responses:
+      200:
+        description: Respuesta exitosa
+        examples:
+          application/json: { "message": "Welcome message example" }
+    """
     return jsonify({"message": "Welcome message example"})
 
 
