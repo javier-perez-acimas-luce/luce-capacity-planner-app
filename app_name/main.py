@@ -43,7 +43,7 @@ def main():
 
     logger.info(log(f"Running the app on {host}:{port}"))
 
-    monitoring = Monitoring(CsvWriter("logs/metrics_example.csv"))
+    monitoring = Monitoring(CsvWriter("metrics_example.csv"))
     # Add script common data to metric on development
     metric = Metric(app_env=env, process_name='app_name', script_name=os.path.basename(__file__),
                     root_process_type="FLASK", status="RUNNING", script_start_ts=SCRIPT_START_TS)
