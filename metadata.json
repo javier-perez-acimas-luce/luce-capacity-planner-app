@@ -1,0 +1,5 @@
+{
+  "name": "Sprint Capacity Planner",
+  "description": "An interactive tool for development team leaders to plan sprint capacity by allocating team members' days to various projects. Features project grouping, summary calculations, and an embedded dashboard view.",
+  "requestFramePermissions": []
+}
