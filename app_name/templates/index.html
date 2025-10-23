@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Sprint Capacity Planner</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <!-- Load TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Custom styles to prevent layout shift */
+      #capacity-table-head,
+      #capacity-table-body,
+      #capacity-table-foot {
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+      }
+      #capacity-table-head.loaded,
+      #capacity-table-body.loaded,
+      #capacity-table-foot.loaded {
+        opacity: 1;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 antialiased">
+
+    <!-- Main Application Root -->
+    <div class="min-h-screen bg-slate-50 text-slate-800">
+      <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <h1 class="text-2xl font-bold text-slate-900">
+            Planificación de Capacidad del Sprint
+          </h1>
+        </div>
+      </header>
+
+      <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Tab Navigation (Hardcoded to Planner) -->
+        <div class="border-b border-slate-200">
+          <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+            <button
+              id="tab-planner"
+              class="border-orange-500 text-orange-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200"
+            >
+              Capacity Planner
+            </button>
+            <button
+              id="tab-dashboard"
+              class="border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200"
+            >
+              Power BI Dashboard
+            </button>
+          </nav>
+        </div>
+
+        <div class="mt-8">
+          <!-- Planner View -->
+          <div id="view-planner">
+            <div class="bg-white p-6 rounded-lg shadow-md relative">
+              <!-- Loading Overlay -->
+              <div id="loading-overlay" class="absolute inset-0 bg-white bg-opacity-80 flex items-center justify-center z-20 rounded-lg">
+                <div class="flex items-center gap-3">
+                  <svg
+                    class="animate-spin h-6 w-6 text-orange-600"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                    ></circle>
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  <p class="text-lg font-semibold text-slate-700">
+                    Loading data...
+                  </p>
+                </div>
+              </div>
+
+              <!-- Header Controls -->
+              <div
+                class="flex flex-wrap justify-end items-center gap-4 mb-6"
+              >
+                <div class="flex items-center gap-2">
+                  <label
+                    for="sprint-select"
+                    class="text-sm font-medium text-slate-700"
+                    >Sprint:</label
+                  >
+                  <select
+                    id="sprint-select"
+                    multiple
+                    class="bg-white border border-slate-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-sm h-24"
+                  >
+                    <!-- Options will be populated by JS -->
+                  </select>
+                </div>
+                <div class="flex items-center gap-2">
+                  <label
+                    for="project-name-filter"
+                    class="text-sm font-medium text-slate-700"
+                    >Proyecto:</label
+                  >
+                  <input
+                    id="project-name-filter"
+                    type="text"
+                    placeholder="Buscar por nombre..."
+                    class="bg-white border border-slate-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-sm"
+                  />
+                </div>
+                <div class="flex items-center gap-2">
+                  <label
+                    for="group-select"
+                    class="text-sm font-medium text-slate-700"
+                    >Grupo:</label
+                  >
+                  <select
+                    id="group-select"
+                    class="bg-white border border-slate-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-sm"
+                  >
+                    <!-- Options will be populated by JS -->
+                  </select>
+                </div>
+                <div class="flex items-center gap-2">
+                  <label
+                    for="team-select"
+                    class="text-sm font-medium text-slate-700"
+                    >Equipo:</label
+                  >
+                  <select
+                    id="team-select"
+                    class="bg-white border border-slate-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-sm"
+                  >
+                    <!-- Options will be populated by JS -->
+                  </select>
+                </div>
+              </div>
+
+              <!-- Capacity Table -->
+              <div class="overflow-x-auto">
+                <table
+                  class="min-w-full border-collapse border border-slate-200"
+                >
+                  <thead id="capacity-table-head" class="bg-slate-100 sticky top-0 z-10">
+                    <!-- Header rows will be populated by JS -->
+                  </thead>
+                  <tbody id="capacity-table-body" class="bg-white divide-y divide-slate-200">
+                    <!-- Table body will be populated by JS -->
+                  </tbody>
+                  <tfoot id="capacity-table-foot" class="bg-slate-100 font-semibold text-sm">
+                    <!-- Footer rows will be populated by JS -->
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dashboard View (Placeholder) -->
+          <div id="view-dashboard" class="hidden">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+              <div class="border-b border-gray-200 pb-4 mb-6">
+                <h2 class="text-xl font-semibold text-gray-800">
+                  Dashboard Interactivo
+                </h2>
+                <p class="text-sm text-gray-500 mt-1">
+                  Visualización de métricas clave del equipo y del sprint.
+                </p>
+              </div>
+
+              <div
+                class="aspect-w-16 aspect-h-9 bg-gray-200 rounded-md overflow-hidden"
+              >
+                <iframe
+                  title="Power BI Dashboard"
+                  class="w-full h-full"
+                  src="https://app.powerbi.com/reportEmbed?reportId=your-report-id&autoAuth=true&ctid=your-tenant-id"
+                  frameborder="0"
+                  allowFullScreen="true"
+                ></iframe>
+              </div>
+
+              <div
+                class="mt-4 p-4 bg-orange-50 border border-orange-200 rounded-md text-sm text-orange-700"
+              >
+                <strong>Nota:</strong> El contenido del dashboard es un
+                ejemplo. Se requiere una URL de inserción de Power BI válida
+                para mostrar un informe real.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </main>
+    </div>
+
+    <!-- Main Application JavaScript -->
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+
+        // --- STATE ---
+        // Holds all application data
+        const state = {
+          loading: true,
+          sprints: [],
+          projectGroups: [],
+          teams: [],
+          projects: [],
+          teamMembers: [],
+          assignments: [],
+          projectCases: [],
+          selectedSprints: [],
+          selectedGroup: "All Groups",
+          selectedTeam: "All Teams",
+          projectNameFilter: "",
+          activeView: 'planner'
+        };
+
+        // --- DOM ELEMENTS ---
+        const dom = {
+          loader: document.getElementById("loading-overlay"),
+          sprintSelect: document.getElementById("sprint-select"),
+          groupSelect: document.getElementById("group-select"),
+          teamSelect: document.getElementById("team-select"),
+          projectNameFilter: document.getElementById("project-name-filter"),
+          tableHead: document.getElementById("capacity-table-head"),
+          tableBody: document.getElementById("capacity-table-body"),
+          tableFoot: document.getElementById("capacity-table-foot"),
+          tabPlanner: document.getElementById("tab-planner"),
+          tabDashboard: document.getElementById("tab-dashboard"),
+          viewPlanner: document.getElementById("view-planner"),
+          viewDashboard: document.getElementById("view-dashboard"),
+        };
+
+        // --- API HELPERS ---
+        const api = {
+          get: (url) => fetch(url).then(res => res.json()),
+          post: (url, body) => fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          }).then(res => res.json())
+        };
+
+        // --- UTILITIES ---
+        const utils = {
+          // Sorts an array of objects by a property
+          sortBy: (arr, key) => [...arr].sort((a, b) => a[key].localeCompare(b[key])),
+          // Gets unique values from an array
+          uniq: (arr) => [...new Set(arr)],
+          // Sums values in an array
+          sum: (arr) => arr.reduce((acc, val) => acc + (Number(val) || 0), 0),
+          // Debounce function to limit rapid firing of events
+          debounce: (func, delay) => {
+            let timeout;
+            return (...args) => {
+              clearTimeout(timeout);
+              timeout = setTimeout(() => func.apply(this, args), delay);
+            };
+          }
+        };
+
+        // --- COMPUTED STATE ---
+        // Functions that calculate derived data from state
+        // Replicates the Angular `computed` signals
+        const computed = {
+          allTeams: () => utils.uniq(state.teamMembers.map(m => m.team)).sort(),
+          allSubteams: () => utils.uniq(state.teamMembers.map(m => m.subteam)).sort(),
+
+          subteamsByTeam: () => {
+            const mapping = {};
+            for (const member of state.teamMembers) {
+              if (!mapping[member.team]) mapping[member.team] = [];
+              if (!mapping[member.team].includes(member.subteam)) {
+                mapping[member.team].push(member.subteam);
+              }
+            }
+            Object.values(mapping).forEach(subteams => subteams.sort());
+            return mapping;
+          },
+
+          filteredTeamMembers: () => {
+            const { selectedTeam, teamMembers } = state;
+            if (selectedTeam === "All Teams") return teamMembers;
+            return teamMembers.filter(m => m.team === selectedTeam);
+          },
+
+          filteredTeams: () => {
+            return utils.uniq(computed.filteredTeamMembers().map(m => m.team)).sort();
+          },
+
+          membersByTeam: () => {
+            const teams = computed.allTeams();
+            const members = computed.filteredTeamMembers();
+            const mapping = {};
+            for (const team of teams) {
+              mapping[team] = members.filter(m => m.team === team);
+            }
+            return mapping;
+          },
+
+          projectsGroupedBySprint: () => {
+            const { selectedSprints, projects, assignments, projectCases, selectedGroup, projectNameFilter } = state;
+            const nameFilter = projectNameFilter.toLowerCase();
+
+            return selectedSprints.map(sprintName => {
+              const sprintAssignments = assignments.filter(a => a.sprint === sprintName);
+              const sprintProjectCases = projectCases.filter(pc => pc.sprint === sprintName);
+
+              const projectsForSprint = projects.map(project => {
+                const assignmentsForProject = sprintAssignments.filter(a => a.projectId === project.id);
+                const casesForProject = sprintProjectCases.filter(pc => pc.projectId === project.id);
+
+                return {
+                  ...project,
+                  assignments: assignmentsForProject.reduce((acc, curr) => {
+                    acc[curr.memberId] = curr.days;
+                    return acc;
+                  }, {}),
+                  projectCase: casesForProject.reduce((acc, curr) => {
+                    acc[curr.subteam] = curr.days;
+                    return acc;
+                  }, {}),
+                };
+              });
+
+              const groupFiltered = selectedGroup === 'All Groups' ? projectsForSprint : projectsForSprint.filter(p => p.project_group === selectedGroup);
+              const nameFiltered = nameFilter
+                ? groupFiltered.filter(p => p.name.toLowerCase().includes(nameFilter))
+                : groupFiltered;
+
+              return { sprint: sprintName, projects: nameFiltered };
+            }).filter(group => group.projects.length > 0);
+          },
+
+          flatFilteredProjects: () => computed.projectsGroupedBySprint().flatMap(group => group.projects),
+
+          totalAssignedPerMember: () => {
+            const totals = {};
+            const flatProjects = computed.flatFilteredProjects();
+            state.teamMembers.forEach(member => {
+              totals[member.id] = utils.sum(flatProjects.map(p => p.assignments[member.id] || 0));
+            });
+            return totals;
+          },
+
+          differencePerMember: () => {
+            const diffs = {};
+            const assigned = computed.totalAssignedPerMember();
+            state.teamMembers.forEach(member => {
+              diffs[member.id] = member.expectedDays - assigned[member.id];
+            });
+            return diffs;
+          },
+
+          totalAssignedPerProject: (project) => utils.sum(Object.values(project.assignments)),
+
+          totalExpectedPerProjectCase: (project) => utils.sum(Object.values(project.projectCase)),
+
+          totalAssignedPerTeamForProject: (project, team) => {
+            const membersInTeam = state.teamMembers.filter(m => m.team === team);
+            return utils.sum(membersInTeam.map(m => project.assignments[m.id] || 0));
+          },
+
+          totalExpectedPerTeamForProject: (project, team) => {
+            const subteams = computed.subteamsByTeam()[team] || [];
+            return utils.sum(subteams.map(st => project.projectCase[st] || 0));
+          },
+
+          differencePerTeamForProject: (project, team) => {
+            const assigned = computed.totalAssignedPerTeamForProject(project, team);
+            const expected = computed.totalExpectedPerTeamForProject(project, team);
+            return assigned - expected;
+          },
+
+          grandTotalAssignedPerTeam: () => {
+            const totals = {};
+            const assignedPerMember = computed.totalAssignedPerMember();
+            computed.allTeams().forEach(team => {
+              totals[team] = utils.sum(
+                state.teamMembers.filter(m => m.team === team).map(m => assignedPerMember[m.id] || 0)
+              );
+            });
+            return totals;
+          },
+
+          grandTotalAssigned: () => utils.sum(Object.values(computed.grandTotalAssignedPerTeam())),
+
+          totalExpectedFromCasePerSubteam: () => {
+            const totals = {};
+            const projects = computed.flatFilteredProjects();
+            computed.allSubteams().forEach(subteam => {
+              totals[subteam] = utils.sum(projects.map(p => p.projectCase[subteam] || 0));
+            });
+            return totals;
+          },
+
+          grandTotalExpectedFromCase: () => utils.sum(Object.values(computed.totalExpectedFromCasePerSubteam())),
+
+          totalColumns: () => {
+            return 2 + computed.allSubteams().length + 1 + computed.filteredTeamMembers().length + computed.filteredTeams().length * 2 + 1;
+          }
+        };
+
+        // --- RENDER FUNCTIONS ---
+        // Functions to build HTML strings and update the DOM
+
+        function renderFilters() {
+          dom.sprintSelect.innerHTML = state.sprints.map(s =>
+            `<option value="${s}" ${state.selectedSprints.includes(s) ? 'selected' : ''}>${s}</option>`
+          ).join('');
+
+          dom.groupSelect.innerHTML = state.projectGroups.map(g =>
+            `<option value="${g}" ${state.selectedGroup === g ? 'selected' : ''}>${g}</option>`
+          ).join('');
+
+          dom.teamSelect.innerHTML = state.teams.map(t =>
+            `<option value="${t}" ${state.selectedTeam === t ? 'selected' : ''}>${t}</option>`
+          ).join('');
+        }
+
+        function renderTable() {
+          setLoading(true);
+          // Run render functions in the next frame to allow loader to show
+          setTimeout(() => {
+            try {
+              renderTableHead();
+              renderTableBody();
+              renderTableFoot();
+              // Add 'loaded' class to fade in content
+              dom.tableHead.classList.add('loaded');
+              dom.tableBody.classList.add('loaded');
+              dom.tableFoot.classList.add('loaded');
+            } catch (e) {
+              console.error("Error rendering table:", e);
+              dom.tableBody.innerHTML = `<tr><td colspan="100%" class="text-center p-8 text-red-500">Error rendering table. Check console for details.</td></tr>`;
+            }
+            setLoading(false);
+          }, 10);
+        }
+
+        function renderTableHead() {
+          const allTeams = computed.allTeams();
+          const subteamsByTeam = computed.subteamsByTeam();
+          const filteredTeamMembers = computed.filteredTeamMembers();
+          const filteredTeams = computed.filteredTeams();
+          const membersByTeam = computed.membersByTeam();
+          const allSubteams = computed.allSubteams();
+
+          let row1 = '', row2 = '', row3 = '', row4 = '';
+
+          // Row 1
+          row1 = `
+            <th class="p-3 text-xs font-semibold tracking-wider text-left text-slate-600 uppercase border border-slate-200 whitespace-nowrap align-middle" rowspan="4">Proyecto</th>
+            <th class="p-3 text-xs font-semibold tracking-wider text-left text-slate-600 uppercase border border-slate-200 whitespace-nowrap align-middle" rowspan="4">Grupo</th>
+            <th class="p-3 text-xs font-semibold tracking-wider text-center text-slate-600 uppercase border border-slate-200 bg-orange-100" colspan="${allSubteams.length + 1}">Caso de Proyecto (Días Esperados)</th>
+          `;
+          if (filteredTeamMembers.length > 0) {
+            row1 += `
+              <th class="p-3 text-xs font-semibold tracking-wider text-center text-slate-600 uppercase border-l border-t border-b border-slate-200" colspan="${filteredTeamMembers.length}">Dedicación Asignada</th>
+              <th class="p-3 text-xs font-semibold tracking-wider text-center text-slate-600 uppercase border-l border-t border-b border-slate-200 bg-slate-200" colspan="${filteredTeams.length}">Totales Asignados por Equipo</th>
+              <th class="p-3 text-xs font-semibold tracking-wider text-center text-slate-600 uppercase border-l border-t border-b border-slate-200 bg-slate-200" colspan="${filteredTeams.length}">Diferencia Equipo</th>
+            `;
+          }
+          row1 += `<th class="p-3 text-xs font-semibold tracking-wider text-center text-slate-600 uppercase border border-slate-200 bg-orange-200 align-middle" rowspan="4">Total General Asignado</th>`;
+
+          // Row 2
+          allTeams.forEach(team => {
+            row2 += `<th class="p-2 text-xs font-medium text-center text-slate-600 border border-slate-200 bg-orange-50" colspan="${subteamsByTeam[team]?.length || 1}">${team}</th>`;
+          });
+          row2 += `<th class="p-2 text-xs font-medium text-center text-slate-500 border border-slate-200 bg-orange-100 font-bold align-middle" rowspan="3">Total</th>`;
+
+          if (filteredTeamMembers.length > 0) {
+            filteredTeams.forEach(team => {
+              row2 += `<th class="p-2 text-xs font-medium text-center text-slate-600 border border-slate-200 bg-slate-50" colspan="${membersByTeam[team]?.length || 1}">${team}</th>`;
+            });
+            filteredTeams.forEach(team => {
+              row2 += `<th class="p-2 text-xs font-medium text-center text-slate-500 border border-slate-200 bg-slate-200 whitespace-nowrap align-middle" rowspan="3">Total ${team}</th>`;
+            });
+            filteredTeams.forEach(team => {
+              row2 += `<th class="p-2 text-xs font-medium text-center text-slate-500 border border-slate-200 bg-slate-200 whitespace-nowrap align-middle" rowspan="3">Diferencia ${team}</th>`;
+            });
+          }
+
+          // Row 3
+          allTeams.forEach(team => {
+            (subteamsByTeam[team] || []).forEach(subteam => {
+              row3 += `<th class="p-2 text-xs font-light text-center text-slate-500 border border-slate-200 whitespace-nowrap" rowspan="2">${subteam}</th>`;
+            });
+          });
+          if (filteredTeamMembers.length > 0) {
+            filteredTeams.forEach(team => {
+              (membersByTeam[team] || []).forEach(member => {
+                row3 += `<th class="p-2 text-xs font-light text-center text-slate-500 border border-slate-200 whitespace-nowrap">${member.subteam}</th>`;
+              });
+            });
+          }
+
+          // Row 4
+          if (filteredTeamMembers.length > 0) {
+            filteredTeams.forEach(team => {
+              (membersByTeam[team] || []).forEach(member => {
+                row4 += `<th class="p-2 text-xs font-medium text-center text-slate-500 border border-slate-200 whitespace-nowrap">${member.name}</th>`;
+              });
+            });
+          }
+
+          dom.tableHead.innerHTML = `
+            <tr>${row1}</tr>
+            <tr>${row2}</tr>
+            <tr>${row3}</tr>
+            <tr>${row4}</tr>
+          `;
+        }
+
+        function renderTableBody() {
+          const projectsGrouped = computed.projectsGroupedBySprint();
+          const allTeams = computed.allTeams();
+          const subteamsByTeam = computed.subteamsByTeam();
+          const filteredTeamMembers = computed.filteredTeamMembers();
+          const filteredTeams = computed.filteredTeams();
+          const totalColumns = computed.totalColumns();
+
+          if (projectsGrouped.length === 0) {
+            dom.tableBody.innerHTML = `<tr><td colspan="${totalColumns}" class="text-center p-8 text-slate-500">No projects found for the selected filters.</td></tr>`;
+            return;
+          }
+
+          let html = '';
+          projectsGrouped.forEach(sprintGroup => {
+            html += `<tr class="bg-orange-100"><th class="p-3 text-left text-sm font-bold text-orange-800" colspan="${totalColumns}">${sprintGroup.sprint}</th></tr>`;
+
+            sprintGroup.projects.forEach(project => {
+              html += `<tr class="hover:bg-slate-50">`;
+              html += `<td class="p-3 text-sm text-slate-700 whitespace-nowrap border-l border-r border-slate-200">${project.name}</td>`;
+              html += `<td class="p-3 text-sm text-slate-500 whitespace-nowrap border-r border-slate-200">${project.group}</td>`;
+
+              allTeams.forEach(team => {
+                (subteamsByTeam[team] || []).forEach(subteam => {
+                  html += `
+                    <td class="p-2 bg-orange-50 border-r border-slate-200 align-middle">
+                      <input
+                        type="number"
+                        min="0"
+                        class="w-16 mx-auto text-center p-1 rounded-md border border-slate-300 focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition bg-orange-50 hover:bg-white focus:bg-white"
+                        value="${project.projectCase[subteam] || 0}"
+                        onchange="window.app.updateProjectCase('${sprintGroup.sprint}', ${project.id}, '${subteam}', event)"
+                        oninput="window.app.handleInput(event)"
+                      />
+                    </td>`;
+                });
+              });
+              html += `<td class="p-2 text-sm text-center font-bold text-orange-800 bg-orange-100 border-r border-slate-200 align-middle">${computed.totalExpectedPerProjectCase(project)}</td>`;
+
+              if (filteredTeamMembers.length > 0) {
+                filteredTeamMembers.forEach(member => {
+                  html += `
+                    <td class="p-2 border-r border-slate-200">
+                      <input
+                        type="number"
+                        min="0"
+                        class="w-16 mx-auto text-center p-1 rounded-md border border-slate-300 focus:ring-1 focus:ring-orange-500 focus:border-orange-500 transition"
+                        value="${project.assignments[member.id] || 0}"
+                        onchange="window.app.updateDays('${sprintGroup.sprint}', ${project.id}, '${member.id}', event)"
+                        oninput="window.app.handleInput(event)"
+                      />
+                    </td>`;
+                });
+                filteredTeams.forEach(team => {
+                  html += `<td class="p-3 text-sm font-medium text-center text-slate-800 bg-slate-200 border-r border-slate-200">${computed.totalAssignedPerTeamForProject(project, team)}</td>`;
+                });
+                filteredTeams.forEach(team => {
+                  const diff = computed.differencePerTeamForProject(project, team);
+                  const colorClass = diff >= 0 ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100';
+                  html += `<td class="p-3 text-sm font-bold text-center border-r border-slate-200 ${colorClass}">${diff}</td>`;
+                });
+              }
+              html += `<td class="p-3 text-sm font-bold text-center text-orange-800 bg-orange-200 border-r border-slate-200">${computed.totalAssignedPerProject(project)}</td>`;
+              html += `</tr>`;
+            });
+          });
+          dom.tableBody.innerHTML = html;
+        }
+
+        function renderTableFoot() {
+          const allTeams = computed.allTeams();
+          const subteamsByTeam = computed.subteamsByTeam();
+          const allSubteams = computed.allSubteams();
+          const filteredTeamMembers = computed.filteredTeamMembers();
+          const filteredTeams = computed.filteredTeams();
+          const totalExpected = computed.totalExpectedFromCasePerSubteam();
+          const grandTotalExpected = computed.grandTotalExpectedFromCase();
+          const totalAssignedMember = computed.totalAssignedPerMember();
+          const grandTotalAssignedTeam = computed.grandTotalAssignedPerTeam();
+          const grandTotalAssigned = computed.grandTotalAssigned();
+          const diffPerMember = computed.differencePerMember();
+
+          let row1 = '', row2 = '', row3 = '';
+
+          // Row 1: Totales
+          row1 = `<td class="p-3 text-slate-800 border border-slate-200" colspan="2">Totales</td>`;
+          allTeams.forEach(team => {
+            (subteamsByTeam[team] || []).forEach(subteam => {
+              row1 += `<td class="p-3 text-center text-orange-800 border border-slate-200">${totalExpected[subteam] || 0}</td>`;
+            });
+          });
+          row1 += `<td class="p-3 text-center text-orange-800 font-bold border border-slate-200">${grandTotalExpected}</td>`;
+
+          if (filteredTeamMembers.length > 0) {
+            filteredTeamMembers.forEach(member => {
+              row1 += `<td class="p-3 text-center text-slate-800 border border-slate-200">${totalAssignedMember[member.id]}</td>`;
+            });
+            filteredTeams.forEach(team => {
+              row1 += `<td class="p-3 text-center text-slate-800 border border-slate-200 bg-slate-200">${grandTotalAssignedTeam[team]}</td>`;
+            });
+            row1 += `<td colspan="${filteredTeams.length}" class="border border-slate-200"></td>`;
+          }
+          row1 += `<td class="p-3 text-center text-orange-800 border border-slate-200 bg-orange-200">${grandTotalAssigned}</td>`;
+
+          // Row 2: Capacidad
+          row2 = `<td class="p-3 text-slate-800 border border-slate-200" colspan="2">Capacidad del Equipo</td>`;
+          row2 += `<td colspan="${allSubteams.length + 1}" class="border border-slate-200"></td>`;
+          if (filteredTeamMembers.length > 0) {
+            filteredTeamMembers.forEach(member => {
+              row2 += `
+                <td class="p-3 text-center text-slate-800 border border-slate-200">
+                  <input type="number" disabled class="w-16 mx-auto text-center p-1 rounded-md bg-slate-200 border-slate-300" value="${member.expectedDays}"/>
+                </td>`;
+            });
+            row2 += `<td colspan="${filteredTeams.length * 2}" class="border-r border-slate-200"></td>`;
+          }
+          row2 += `<td class="border-r border-slate-200"></td>`;
+
+          // Row 3: Diferencia
+          row3 = `<td class="p-3 text-slate-800 border border-slate-200" colspan="2">Diferencia Miembro</td>`;
+          row3 += `<td colspan="${allSubteams.length + 1}" class="border border-slate-200"></td>`;
+          if (filteredTeamMembers.length > 0) {
+            filteredTeamMembers.forEach(member => {
+              const diff = diffPerMember[member.id];
+              const colorClass = diff >= 0 ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100';
+              row3 += `<td class="p-3 font-bold text-center border border-slate-200 ${colorClass}">${diff}</td>`;
+            });
+            row3 += `<td colspan="${filteredTeams.length * 2}" class="border-r border-slate-200"></td>`;
+          }
+          row3 += `<td class="border-r border-slate-200"></td>`;
+
+          dom.tableFoot.innerHTML = `
+            <tr class="bg-orange-100">${row1}</tr>
+            <tr>${row2}</tr>
+            <tr>${row3}</tr>
+          `;
+        }
+
+        function setLoading(isLoading) {
+          state.loading = isLoading;
+          dom.loader.style.display = isLoading ? "flex" : "none";
+          if (!isLoading) {
+            // Clear opacity for future renders
+            dom.tableHead.classList.remove('loaded');
+            dom.tableBody.classList.remove('loaded');
+            dom.tableFoot.classList.remove('loaded');
+          }
+        }
+
+        function switchView(view) {
+          state.activeView = view;
+          if (view === 'planner') {
+            dom.viewPlanner.style.display = 'block';
+            dom.viewDashboard.style.display = 'none';
+            dom.tabPlanner.classList.add('border-orange-500', 'text-orange-600');
+            dom.tabPlanner.classList.remove('border-transparent', 'text-slate-500');
+            dom.tabDashboard.classList.add('border-transparent', 'text-slate-500');
+            dom.tabDashboard.classList.remove('border-orange-500', 'text-orange-600');
+          } else {
+            dom.viewPlanner.style.display = 'none';
+            dom.viewDashboard.style.display = 'block';
+            dom.tabDashboard.classList.add('border-orange-500', 'text-orange-600');
+            dom.tabDashboard.classList.remove('border-transparent', 'text-slate-500');
+            dom.tabPlanner.classList.add('border-transparent', 'text-slate-500');
+            dom.tabPlanner.classList.remove('border-orange-500', 'text-orange-600');
+          }
+        }
+
+        // --- EVENT HANDLERS ---
+
+        async function handleFilterChange() {
+          // Clear table content and show loader
+          dom.tableHead.innerHTML = '';
+          dom.tableBody.innerHTML = '';
+          dom.tableFoot.innerHTML = '';
+          setLoading(true);
+
+          await fetchSprintData(); // This will fetch and re-render
+        }
+
+        function handleSprintChange(e) {
+          state.selectedSprints = Array.from(e.target.selectedOptions).map(opt => opt.value);
+          handleFilterChange();
+        }
+
+        function handleGroupChange(e) {
+          state.selectedGroup = e.target.value;
+          renderTable(); // No data fetch needed, just re-render
+        }
+
+        function handleTeamChange(e) {
+          state.selectedTeam = e.target.value;
+          renderTable(); // No data fetch needed, just re-render
+        }
+
+        function handleProjectNameChange(e) {
+            state.projectNameFilter = e.target.value;
+            renderTable(); // No data fetch needed, just re-render
+        }
+
+        async function handleUpdateDays(sprint, projectId, memberId, event) {
+          const days = parseInt(event.target.value, 10) || 0;
+
+          // Optimistically update state
+          const index = state.assignments.findIndex(a => a.sprint === sprint && a.projectId === projectId && a.memberId === memberId);
+          if (index > -1) {
+            state.assignments[index].days = days;
+          } else {
+            state.assignments.push({ sprint, projectId, memberId, days });
+          }
+
+          // Re-render the footer (which contains totals)
+          renderTableFoot();
+          // We could re-render the whole table, but just footer is more efficient
+          // renderTable();
+
+          try {
+            await api.post('/api/assignment', { sprint, projectId, memberId, days });
+            console.log('Assignment updated');
+          } catch (err) {
+            console.error('Failed to update assignment', err);
+            // TODO: Add error handling (e.g., revert state, show error message)
+          }
+        }
+
+        async function handleUpdateProjectCase(sprint, projectId, subteam, event) {
+          const days = parseInt(event.target.value, 10) || 0;
+
+          // Optimistically update state
+          const index = state.projectCases.findIndex(pc => pc.sprint === sprint && pc.projectId === projectId && pc.subteam === subteam);
+          if (index > -1) {
+            state.projectCases[index].days = days;
+          } else {
+            state.projectCases.push({ sprint, projectId, subteam, days });
+          }
+
+          // Re-render the footer (which contains totals)
+          renderTableFoot();
+
+          try {
+            await api.post('/api/project-case', { sprint, projectId, subteam, days });
+            console.log('Project case updated');
+          } catch (err) {
+            console.error('Failed to update project case', err);
+          }
+        }
+
+        // Handle input to prevent negative numbers
+        function handleInput(event) {
+            if (parseInt(event.target.value, 10) < 0) {
+                event.target.value = 0;
+            }
+        }
+
+        // --- INITIALIZATION ---
+
+        async function fetchSprintData() {
+          if (state.selectedSprints.length === 0) {
+            state.assignments = [];
+            state.projectCases = [];
+            renderTable();
+            return;
+          }
+
+          try {
+            const sprintData = await api.get(`/api/sprint-data?sprints=${state.selectedSprints.join(',')}`);
+            state.assignments = sprintData.assignments;
+            state.projectCases = sprintData.projectCases;
+            renderTable();
+          } catch (err) {
+            console.error("Failed to fetch sprint data", err);
+            dom.tableBody.innerHTML = `<tr><td colspan="100%" class="text-center p-8 text-red-500">Failed to load sprint data.</td></tr>`;
+            setLoading(false);
+          }
+        }
+
+        async function initApp() {
+          try {
+            setLoading(true);
+            // Fetch all static data in parallel
+            const [sprints, projectData, teamData] = await Promise.all([
+              api.get('/api/sprints'),
+              api.get('/api/projects-and-groups'),
+              api.get('/api/team-data')
+            ]);
+
+            // Populate state
+            state.sprints = sprints;
+            state.projects = projectData.projects;
+            state.projectGroups = projectData.projectGroups;
+            state.teamMembers = teamData.teamMembers;
+            state.teams = teamData.teams;
+
+            // Set default sprint
+            if (sprints.length > 0) {
+              state.selectedSprints = [sprints[0]];
+            }
+
+            // Render static filter dropdowns
+            renderFilters();
+
+            // Setup event listeners
+            dom.sprintSelect.addEventListener('change', handleSprintChange);
+            dom.groupSelect.addEventListener('change', handleGroupChange);
+            dom.teamSelect.addEventListener('change', handleTeamChange);
+            dom.projectNameFilter.addEventListener('input', utils.debounce(handleProjectNameChange, 300));
+            dom.tabPlanner.addEventListener('click', () => switchView('planner'));
+            dom.tabDashboard.addEventListener('click', () => switchView('dashboard'));
+
+            // Expose update handlers to global window object for inline HTML event listeners
+            window.app = {
+              updateDays: handleUpdateDays,
+              updateProjectCase: handleUpdateProjectCase,
+              handleInput: handleInput
+            };
+
+            // Fetch initial data for the default sprint and render the table
+            await fetchSprintData();
+
+          } catch (err) {
+            console.error("Failed to initialize app", err);
+            dom.loader.innerHTML = `<p class="text-lg font-semibold text-red-700">Failed to load application data. Please refresh.</p>`;
+          }
+        }
+
+        // Start the application
+        initApp();
+      });
+    </script>
+  </body>
+</html>

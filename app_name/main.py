@@ -3,9 +3,10 @@ from datetime import datetime
 
 import pytz
 from flasgger import Swagger
-from flask import Flask, jsonify, Response
-from flask_cors import CORS
+from flask import Flask, jsonify, Response, render_template, request
 from google.cloud import bigquery
+from google.api_core.exceptions import NotFound
+
 
 from app_name.utils import io
 from app_name.utils.logger import logger, log
@@ -16,7 +17,6 @@ from app_name.utils.writers import CsvWriter
 app = Flask(__name__)
 config = io.load_config_by_env()
 SCRIPT_START_TS = datetime.now(pytz.utc).isoformat()
-CORS(app)
 
 # Obtener la ruta absoluta del archivo swagger.yaml
 base_dir = os.path.abspath(os.path.dirname(__file__))  # Ruta de la carpeta src/
@@ -24,208 +24,284 @@ swagger_path = os.path.join(base_dir, '..', 'swagger.yaml')  # Subir un nivel y 
 # Configurar Swagger para que use el archivo swagger.yaml
 swagger = Swagger(app, template_file=swagger_path)
 
-# Initialize BigQuery client
-# This will use credentials set in the GOOGLE_APPLICATION_CREDENTIALS env variable
+# --- BigQuery Client Initialization ---
+# This will use the environment's default credentials
+# (e.g., from GOOGLE_APPLICATION_CREDENTIALS or GKE Workload Identity)
 try:
     bigquery_client = bigquery.Client()
-    print("BigQuery client initialized successfully.")
+    logger.info("BigQuery client initialized successfully.")
 except Exception as e:
-    print(f"Warning: Could not initialize BigQuery client. Running in mock-only mode. Error: {e}")
+    logger.critical(f"Failed to initialize BigQuery client: {e}")
     bigquery_client = None
 
-# --- Mock Data (Converted from your TypeScript) ---
-# We use this as a fallback and for initial setup
-mock_sprints = ['Sprint 2024.10', 'Sprint 2024.11', 'Sprint 2024.12']
-mock_project_groups = ['All Groups', 'Core Platform', 'Growth Initiatives', 'Internal Tools']
-mock_teams = ['All Teams', 'DATA', 'DEVELOP', 'ANALYTIC', 'IT']
+# --- !!! IMPORTANT: CONFIGURE YOUR TABLE NAMES HERE !!! ---
+# Replace with your actual project, dataset, and table names.
+PROJECT_ID = "olimpo-bi"
 
-mock_projects = [
-    {'id': 1, 'name': 'Phoenix Project', 'group': 'Core Platform'},
-    {'id': 2, 'name': 'Project Chimera', 'group': 'Growth Initiatives'},
-    {'id': 3, 'name': 'Odyssey Initiative', 'group': 'Core Platform'},
-    {'id': 4, 'name': 'Quantum Leap', 'group': 'Internal Tools'},
-]
-
-mock_team_members = [
-    {'id': 'alice', 'name': 'Alice', 'team': 'DATA', 'subteam': 'Data Engineer', 'expectedDays': 18},
-    {'id': 'bob', 'name': 'Bob', 'team': 'DATA', 'subteam': 'BI', 'expectedDays': 20},
-    {'id': 'charlie', 'name': 'Charlie', 'team': 'DEVELOP', 'subteam': 'Backend', 'expectedDays': 20},
-    {'id': 'diana', 'name': 'Diana', 'team': 'DEVELOP', 'subteam': 'Frontend', 'expectedDays': 15},
-    {'id': 'grace', 'name': 'Grace', 'team': 'DEVELOP', 'subteam': 'Mobile', 'expectedDays': 17},
-    {'id': 'ethan', 'name': 'Ethan', 'team': 'IT', 'subteam': 'Cloud', 'expectedDays': 22},
-    {'id': 'frank', 'name': 'Frank', 'team': 'ANALYTIC', 'subteam': 'Analyst', 'expectedDays': 19},
-]
-
-mock_assignments = []
-mock_project_cases = []
-
-
-def prepopulate_mock_data():
-    global mock_assignments, mock_project_cases
-    mock_assignments = []
-    mock_project_cases = []
-
-    for sprint in mock_sprints:
-        for project in mock_projects:
-            for member in mock_team_members:
-                mock_assignments.append(
-                    {'sprint': sprint, 'projectId': project['id'], 'memberId': member['id'], 'days': 0})
-
-            if project['id'] == 1:  # Phoenix Project
-                mock_project_cases.extend([
-                    {'sprint': sprint, 'projectId': 1, 'subteam': 'Data Engineer', 'days': 5},
-                    {'sprint': sprint, 'projectId': 1, 'subteam': 'BI', 'days': 5},
-                    {'sprint': sprint, 'projectId': 1, 'subteam': 'Backend', 'days': 15},
-                    {'sprint': sprint, 'projectId': 1, 'subteam': 'Frontend', 'days': 10},
-                    {'sprint': sprint, 'projectId': 1, 'subteam': 'Cloud', 'days': 5},
-                ])
-            if project['id'] == 2:  # Project Chimera
-                mock_project_cases.extend([
-                    {'sprint': sprint, 'projectId': 2, 'subteam': 'Data Engineer', 'days': 10},
-                    {'sprint': sprint, 'projectId': 2, 'subteam': 'BI', 'days': 5},
-                    {'sprint': sprint, 'projectId': 2, 'subteam': 'Backend', 'days': 20},
-                ])
-
-
-prepopulate_mock_data()
-print(f"Mock data prepopulated: {len(mock_assignments)} assignments, {len(mock_project_cases)} project cases.")
-
-
+SPRINTS_TABLE = f"`{PROJECT_ID}.sprints.luce_calendarSprint`"
+PROJECTS_TABLE = f"`{PROJECT_ID}.projects.luce_projects`"
+TEAM_MEMBERS_TABLE = f"`{PROJECT_ID}.people.luce_people`"
+ASSIGNMENTS_TABLE = f"`{PROJECT_ID}.capacity_planner_app.people_assignment`"
+PROJECT_CASES_TABLE = f"`{PROJECT_ID}.capacity_planner_app.project_assignment`"
 # --- API Endpoints ---
 
 @app.route("/api/sprints", methods=['GET'])
 def get_sprints():
-    # TODO: Replace this mock data with your BigQuery query
-    #
-    # try:
-    #     if not bigquery_client:
-    #         raise Exception("BigQuery client not initialized")
-    #
-    #     query = """
-    #         SELECT DISTINCT sprint_name
-    #         FROM `your-project.your-dataset.your_sprints_table`
-    #         ORDER BY sprint_name DESC
-    #     """
-    #     query_job = bigquery_client.query(query)
-    #     results = query_job.result()
-    #     sprints = [row.sprint_name for row in results]
-    #     return jsonify(sprints)
-    #
-    # except Exception as e:
-    #     print(f"Error in /api/sprints: {e}")
-    #     # Fallback to mock data on error
-    #     return jsonify(mock_sprints)
+    if not bigquery_client:
+        return jsonify({"error": "BigQuery client not initialized"}), 500
 
-    print("Serving mock data for /api/sprints")
-    return jsonify(mock_sprints)
+    query = f"""
+        SELECT DISTINCT calendar_sprint_str_i as sprint_name
+        FROM {SPRINTS_TABLE}
+        WHERE calendar_date_date_i > CURRENT_DATE()
+        ORDER BY calendar_sprint_str_i ASC
+    """
+    try:
+        query_job = bigquery_client.query(query)
+        results = query_job.result()
+        sprints = [row.sprint_name for row in results]
+        logger.info(f"Successfully fetched {len(sprints)} sprints.")
+        return jsonify(sprints)
+    except NotFound:
+        logger.error(f"Table not found: {SPRINTS_TABLE}")
+        return jsonify({"error": f"Table not found: {SPRINTS_TABLE}"}), 500
+    except Exception as e:
+        logger.error(f"Error in /api/sprints: {e}")
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/projects-and-groups", methods=['GET'])
 def get_projects_and_groups():
-    # TODO: Replace with your BigQuery query to fetch projects and groups
-    # You might need two queries or one complex one with a UNION
+    if not bigquery_client:
+        return jsonify({"error": "BigQuery client not initialized"}), 500
 
-    print("Serving mock data for /api/projects-and-groups")
-    return jsonify({
-        'projects': mock_projects,
-        'projectGroups': mock_project_groups
-    })
+    projects_query = f"""
+        SELECT project_code_int_i as id, project_name_str_i as name, project_bussinesLine_str_d as project_group
+        FROM {PROJECTS_TABLE}
+        ORDER BY project_name_str_i
+    """
+    groups_query = f"""
+        SELECT DISTINCT project_bussinesLine_str_d as project_group
+        FROM {PROJECTS_TABLE}
+        WHERE project_bussinesLine_str_d IS NOT NULL
+        ORDER BY project_bussinesLine_str_d
+    """
+    try:
+        # Fetch projects
+        projects_job = bigquery_client.query(projects_query)
+        projects = [dict(row) for row in projects_job.result()]
+
+        # Fetch groups
+        groups_job = bigquery_client.query(groups_query)
+        # Prepend "All Groups" to the list
+        project_groups = ['All Groups'] + [row.project_group for row in groups_job.result()]
+
+        logger.info(f"Fetched {len(projects)} projects and {len(project_groups) - 1} groups.")
+        return jsonify({
+            'projects': projects,
+            'projectGroups': project_groups
+        })
+    except NotFound:
+        logger.error(f"Table not found: {PROJECTS_TABLE}")
+        return jsonify({"error": f"Table not found: {PROJECTS_TABLE}"}), 500
+    except Exception as e:
+        logger.error(f"Error in /api/projects-and-groups: {e}")
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/team-data", methods=['GET'])
 def get_team_data():
-    # TODO: Replace with your BigQuery query to fetch team members and teams
+    if not bigquery_client:
+        return jsonify({"error": "BigQuery client not initialized"}), 500
 
-    print("Serving mock data for /api/team-data")
-    return jsonify({
-        'teamMembers': mock_team_members,
-        'teams': mock_teams,
-    })
+    members_query = f"""
+        SELECT person_name_str_i as id, person_name_str_i as name, person_chapter_str_d as team, person_team_str_d as subteam, person_workDaysTotal_float_i as expectedDays
+        FROM {TEAM_MEMBERS_TABLE}
+        ORDER BY person_chapter_str_d, person_team_str_d, person_name_str_i
+    """
+    teams_query = f"""
+        SELECT DISTINCT person_chapter_str_d as team
+        FROM {TEAM_MEMBERS_TABLE}
+        WHERE person_chapter_str_d IS NOT NULL
+        ORDER BY person_chapter_str_d
+    """
+    try:
+        # Fetch team members
+        members_job = bigquery_client.query(members_query)
+        team_members = [dict(row) for row in members_job.result()]
+
+        # Fetch teams
+        teams_job = bigquery_client.query(teams_query)
+        # Prepend "All Teams"
+        teams = ['All Teams'] + [row.team for row in teams_job.result()]
+
+        logger.info(f"Fetched {len(team_members)} team members and {len(teams) - 1} teams.")
+        return jsonify({
+            'teamMembers': team_members,
+            'teams': teams,
+        })
+    except NotFound:
+        logger.error(f"Table not found: {TEAM_MEMBERS_TABLE}")
+        return jsonify({"error": f"Table not found: {TEAM_MEMBERS_TABLE}"}), 500
+    except Exception as e:
+        logger.error(f"Error in /api/team-data: {e}")
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/sprint-data", methods=['GET'])
 def get_sprint_data():
+    if not bigquery_client:
+        return jsonify({"error": "BigQuery client not initialized"}), 500
+
     sprints_str = request.args.get('sprints', '')
     if not sprints_str:
         return jsonify({"error": "No sprints provided"}), 400
 
     sprints_list = sprints_str.split(',')
+    logger.info(f"Serving data for /api/sprint-data for sprints: {sprints_list}")
 
-    # TODO: Replace with your BigQuery query
-    # Use the `sprints_list` to filter your results in the WHERE clause
-    # e.g., WHERE sprint_name IN UNNEST(@sprints)
-    # You'll need to use BigQuery parameters to pass the list safely.
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ArrayQueryParameter("sprints", "STRING", sprints_list)
+        ]
+    )
 
-    print(f"Serving mock data for /api/sprint-data for sprints: {sprints_list}")
-    assignments = [a for a in mock_assignments if a['sprint'] in sprints_list]
-    project_cases = [pc for pc in mock_project_cases if pc['sprint'] in sprints_list]
+    assignments_query = f"""
+        SELECT sprint, project_id as projectId, person_name as memberID, assignment as days
+        FROM {ASSIGNMENTS_TABLE}
+        WHERE sprint IN UNNEST(@sprints)
+    """
+    project_cases_query = f"""
+        SELECT sprint, project_id as projectId, team as subteam, assignment as days
+        FROM {PROJECT_CASES_TABLE}
+        WHERE sprint IN UNNEST(@sprints)
+    """
 
-    return jsonify({
-        'assignments': assignments,
-        'projectCases': project_cases
-    })
+    try:
+        # Fetch assignments
+        assign_job = bigquery_client.query(assignments_query, job_config=job_config)
+        assignments = [dict(row) for row in assign_job.result()]
+
+        # Fetch project cases
+        pc_job = bigquery_client.query(project_cases_query, job_config=job_config)
+        project_cases = [dict(row) for row in pc_job.result()]
+
+        logger.info(f"Fetched {len(assignments)} assignments and {len(project_cases)} project cases.")
+        return jsonify({
+            'assignments': assignments,
+            'projectCases': project_cases
+        })
+    except NotFound:
+        logger.error(f"Table not found: {ASSIGNMENTS_TABLE} or {PROJECT_CASES_TABLE}")
+        return jsonify({"error": "One or more data tables not found."}), 500
+    except Exception as e:
+        logger.error(f"Error in /api/sprint-data: {e}")
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/assignment", methods=['POST'])
 def update_assignment():
+    if not bigquery_client:
+        return jsonify({"error": "BigQuery client not initialized"}), 500
+
     assignment = request.json
+    logger.info(f"Updating assignment: {assignment}")
 
-    # TODO: Replace with your BigQuery UPDATE or MERGE statement
-    # Use the `assignment` dictionary to get values for your query
+    # Ensure days is an integer
+    try:
+        days = int(assignment.get('days', 0))
+    except ValueError:
+        days = 0
 
-    print(f"Updating mock assignment: {assignment}")
-    index_to_update = -1
-    for i, a in enumerate(mock_assignments):
-        if (a['sprint'] == assignment['sprint'] and
-                a['projectId'] == assignment['projectId'] and
-                a['memberId'] == assignment['memberId']):
-            index_to_update = i
-            break
+    merge_query = f"""
+        MERGE INTO {ASSIGNMENTS_TABLE} T
+        USING (
+            SELECT
+                @sprint AS sprint,
+                @project_id AS projectId,
+                @person_name AS memberId
+        ) S
+        ON T.sprint = S.sprint AND T.projectId = S.projectId AND T.memberId = S.memberId
+        WHEN MATCHED THEN
+            UPDATE SET T.days = @days
+        WHEN NOT MATCHED THEN
+            INSERT (sprint, projectId, memberId, days)
+            VALUES (@sprint, @projectId, @memberId, @days)
+    """
 
-    if index_to_update > -1:
-        mock_assignments[index_to_update] = assignment
-    else:
-        mock_assignments.append(assignment)
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("sprint", "STRING", assignment.get('sprint')),
+            bigquery.ScalarQueryParameter("projectId", "INT64", int(assignment.get('projectId', 0))),
+            bigquery.ScalarQueryParameter("memberId", "STRING", assignment.get('memberId')),
+            bigquery.ScalarQueryParameter("days", "INT64", days),
+        ]
+    )
 
-    return jsonify(assignment)
+    try:
+        query_job = bigquery_client.query(merge_query, job_config=job_config)
+        query_job.result()  # Wait for the job to complete
+        logger.info(f"Successfully merged assignment: {assignment}")
+        return jsonify(assignment)
+    except Exception as e:
+        logger.error(f"Error in /api/assignment: {e}")
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/project-case", methods=['POST'])
 def update_project_case():
+    if not bigquery_client:
+        return jsonify({"error": "BigQuery client not initialized"}), 500
+
     project_case = request.json
+    logger.info(f"Updating project case: {project_case}")
 
-    # TODO: Replace with your BigQuery UPDATE or MERGE statement
-    # Use the `project_case` dictionary to get values
+    try:
+        days = int(project_case.get('days', 0))
+    except ValueError:
+        days = 0
 
-    print(f"Updating mock project case: {project_case}")
-    index_to_update = -1
-    for i, pc in enumerate(mock_project_cases):
-        if (pc['sprint'] == project_case['sprint'] and
-                pc['projectId'] == project_case['projectId'] and
-                pc['subteam'] == project_case['subteam']):
-            index_to_update = i
-            break
+    merge_query = f"""
+        MERGE INTO {PROJECT_CASES_TABLE} T
+        USING (
+            SELECT
+                @sprint AS sprint,
+                @projectId AS projectId,
+                @subteam AS subteam
+        ) S
+        ON T.sprint = S.sprint AND T.projectId = S.projectId AND T.subteam = S.subteam
+        WHEN MATCHED THEN
+            UPDATE SET T.days = @days
+        WHEN NOT MATCHED THEN
+            INSERT (sprint, projectId, subteam, days)
+            VALUES (@sprint, @projectId, @subteam, @days)
+    """
 
-    if index_to_update > -1:
-        mock_project_cases[index_to_update] = project_case
-    else:
-        mock_project_cases.append(project_case)
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("sprint", "STRING", project_case.get('sprint')),
+            bigquery.ScalarQueryParameter("projectId", "INT64", int(project_case.get('projectId', 0))),
+            bigquery.ScalarQueryParameter("subteam", "STRING", project_case.get('subteam')),
+            bigquery.ScalarQueryParameter("days", "INT64", days),
+        ]
+    )
 
-    return jsonify(project_case)
+    try:
+        query_job = bigquery_client.query(merge_query, job_config=job_config)
+        query_job.result()  # Wait for the job to complete
+        logger.info(f"Successfully merged project case: {project_case}")
+        return jsonify(project_case)
+    except Exception as e:
+        logger.error(f"Error in /api/project-case: {e}")
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/", methods=['GET'])
 def index() -> Response:
     """
-    Un simple endpoint de bienvenida.
-    ---
-    responses:
-      200:
-        description: Respuesta exitosa
-        examples:
-          application/json: { "message": "Welcome message example" }
+    Renderiza la página principal de la aplicación.
     """
-    return jsonify({"message": "Welcome message example"})
+    return render_template('index.html')
 
 
 def main():
